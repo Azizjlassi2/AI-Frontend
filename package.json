@@ -7,7 +7,7 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
-    "predepoly":"npm run build",
+    "predeploy":"npm run build",
     "deploy": "gh-pages -d build"
     
   },
