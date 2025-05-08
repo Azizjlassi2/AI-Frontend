@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom';
 export function Hero() {
   return <section className="relative bg-[url('Background-image.jpg')] bg-cover bg-center py-16 sm:py-24 min-h-screen"
     style={{
-      backgroundPosition: 'center', backgroundSize: 'cover', backgroundRepeat: 'no-repeat',
+      backgroundPosition: 'center', backgroundSize: 'contain', backgroundRepeat: 'no-repeat',
     }}>
     <div className="container mx-auto px-4 sm:px-6 lg:px-8 ">
 
@@ -10,8 +10,9 @@ export function Hero() {
         <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold text-gray-100 mb-6">
           La plateforme tunisienne d'intelligence artificielle
         </h1>
+
         <p className="text-xl text-gray-300 mb-10 max-w-2xl mx-auto">
-          Partagez, déployez et monétisez vos modèles d'IA. Rejoignez la
+          Partagez, déployez et monétisez vos modèles d'IA.<br /> Rejoignez la
           communauté des développeurs et chercheurs tunisiens en IA.
         </p>
         <div className="flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-4">

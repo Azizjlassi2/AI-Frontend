@@ -41,7 +41,7 @@ export function Footer() {
             <li>
               <Link
                 to="/terms"
-                className="text-blue-600 hover:text-blue-500"
+                className="text-gray-400 hover:text-blue-500 transition-colors"
               >
                 Conditions d'utilisation
               </Link>
