@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "private": true,
   "type": "module",
-  "homepage": "https://jlassiaziz.github.io/AIplus",
+  "homepage": "https://azizjlassi2.github.io/AI-Frontend/",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
