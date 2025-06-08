@@ -1,8 +1,9 @@
 import { Link } from 'react-router-dom';
 export function Hero() {
-  return <section className="relative bg-[url('Background-image.jpg')] bg-cover bg-center py-16 sm:py-24 min-h-screen"
+  return <section className="relative  bg-cover bg-center py-16 sm:py-24 min-h-screen"
     style={{
       backgroundPosition: 'center', backgroundSize: 'contain', backgroundRepeat: 'no-repeat',
+      backgroundImage: `url('/Background-image.jpg')`
     }}>
     <div className="container mx-auto px-4 sm:px-6 lg:px-8 ">
 
