@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import {
   Database,
   Calendar,
@@ -6,7 +6,6 @@ import {
   Tag,
   Star,
   Share2,
-  GitBranch,
   Bot,
   Check,
   CreditCard,
@@ -14,10 +13,9 @@ import {
   Zap,
 } from 'lucide-react'
 import { Link } from 'react-router-dom'
-import { useNavigate, useLocation } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 export function ModelDetailPage() {
   const navigate = useNavigate()
-  const location = useLocation()
   const [selectedPlan, setSelectedPlan] = useState('monthly')
   const model = {
     name: 'ArabicBERT',
@@ -122,7 +120,7 @@ export function ModelDetailPage() {
       },
     },
   }
-  const renderPlanFeatures = (features: any[]) => {
+  const renderPlanFeatures = (features: string[]) => {
     return features.map((feature, index) => (
       <li key={index} className="flex items-center mb-2">
         <Check className="h-5 w-5 text-green-500 mr-2" />
