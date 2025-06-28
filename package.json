@@ -3,18 +3,17 @@
   "version": "0.0.1",
   "private": true,
   "type": "module",
-  "homepage": "https://azizjlassi2.github.io/AI-Frontend/",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
-    "predeploy":"npm run build",
+    "predeploy": "npm run build",
     "deploy": "gh-pages -d dist"
-    
   },
   "dependencies": {
     "@types/axios": "^0.14.4",
     "axios": "^1.8.3",
+    "dotenv": "^17.0.0",
     "gh-pages": "^6.3.0",
     "lucide-react": "latest",
     "react": "^18.3.1",

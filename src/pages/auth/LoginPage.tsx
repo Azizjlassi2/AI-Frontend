@@ -2,6 +2,8 @@ import { LockIcon, MailIcon } from "lucide-react";
 import { Link, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import axios from 'axios';
+// import dotenv from 'dotenv';
+// dotenv.config();
 
 export function LoginPage() {
   const [email, setEmail] = useState('');
