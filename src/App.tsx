@@ -6,7 +6,6 @@ import { ModelsPage } from "./pages/models/ModelsPage";
 import { ModelDetailPage } from "./pages/models/ModelDetailPage";
 import { DatasetsPage } from "./pages/datasets/DatasetsPage";
 import { DatasetDetailPage } from "./pages/datasets/DatasetDetailPage";
-import { DocsPage } from "./pages/base/DocsPage";
 import { LoginPage } from "./pages/auth/LoginPage";
 import { AboutPage } from "./pages/base/AboutPage";
 import { ContactPage } from "./pages/base/ContactPage";
@@ -43,6 +42,7 @@ import { Error500Page } from "./pages/error/Error500Page";
 import { Error404Page } from "./pages/error/Error404Page";
 import { InvoiceDetailPage } from "./pages/admin/InvoiceDetailPage";
 import { ModelPaymentPage } from "./pages/models/ModelPaymentPage";
+import { UnderMaintenancePage } from "./pages/error/UnderMaintenancePage";
 
 
 function AppContent() {
@@ -58,22 +58,27 @@ function AppContent() {
           <Route path="/models" element={<ModelsPage />} />
           <Route path="/models/:id" element={<ModelDetailPage />} />
           <Route path="/models/:id/payment" element={<ModelPaymentPage />} />
-
           <Route path="/models/add" element={<AddModelPage />} />
+
           <Route path="/datasets" element={<DatasetsPage />} />
           <Route path="/datasets/:id" element={<DatasetDetailPage />} />
           <Route path="/datasets/add" element={<AddDatasetPage />} />
-          <Route path="/docs" element={<DocsPage />} />
+
+          <Route path="/docs" element={<UnderMaintenancePage />} />
+
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/forgot-password" element={<ForgotPasswordPage />} />
           <Route path="/reset-password" element={<ResetPasswordPage />} />
           <Route path="/reset-password/send-link" element={<ResetLinkSentPage />} />
+
           <Route path="/about" element={<AboutPage />} />
           <Route path="/contact" element={<ContactPage />} />
           <Route path="/creators/:name" element={<CreatorProfilePage />} />
+
           <Route path="/dev/dashboard" element={<DeveloperDashboardPage />} />
           <Route path="/dev/settings" element={<DeveloperSettingsPage />} />
+
           <Route path="/models/:id/subscriptions" element={<SubscriptionManagementPage />} />
           <Route path="/models/:id/docs" element={<ModelDocumentationPage />} />
           <Route path="/subscriptions/new" element={<AddSubscriptionPlanPage />} />
@@ -81,8 +86,9 @@ function AppContent() {
           <Route path="/client/dashboard" element={<ClientDashboardPage />} />
           <Route path="/client/settings" element={<ClientSettingsPage />} />
           <Route path="/403" element={<Error403Page />} />
-          <Route path="/*" element={<Error404Page />} />
           <Route path="/500" element={<Error500Page />} />
+
+          <Route path="/*" element={<Error404Page />} />
 
           {/* Admin Routes */}
           <Route path="/admin/dashboard" element={<AdminDashboardPage />} />

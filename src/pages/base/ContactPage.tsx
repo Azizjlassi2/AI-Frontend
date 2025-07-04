@@ -19,7 +19,7 @@ export function ContactPage() {
     e.preventDefault();
     try {
       setLoading(true)
-      const response = await axios.post('http://localhost:8080/api/v1/contact/us', {
+      const response = await axios.post(`${import.meta.env.VITE_BACKEND_HOST}/api/v1/contact/us`, {
         username,
         email,
         subject,

@@ -1,4 +1,4 @@
-import { Code, Wallet, UploadCloud, BarChart, Settings, FileText, Server, Share2, Clock, Tag, Users } from "lucide-react";
+import { Code, Wallet, UploadCloud, BarChart, Settings, FileText, Share2, Clock, Tag, Users } from "lucide-react";
 import { Link } from "react-router-dom";
 
 export function DeveloperDashboardPage() {

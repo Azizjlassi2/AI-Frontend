@@ -53,10 +53,10 @@ export function RegisterPage() {
                 throw new Error("Veuillez entrer une adresse email valide");
             }
 
-            await axios.post("http://localhost:8080/api/v1/auth/register", formData, {
+            const response = await axios.post(`${import.meta.env.VITE_BACKEND_HOST}/api/v1/auth/register`, formData, {
                 headers: { "Content-Type": "application/json" }
             });
-
+            console.log("Compte créé avec succès :", response);
             alert("Compte créé avec succès ! Redirection...");
             navigate("/login");
         } catch (error) {

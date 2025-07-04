@@ -16,7 +16,7 @@ export function ForgotPasswordPage() {
         setLoading(true);
 
         try {
-            const response = await axios.post("http://localhost:8080/api/v1/auth/forgot-password", { email });
+            const response = await axios.post(`${import.meta.env.VITE_BACKEND_HOST}/api/v1/auth/forgot-password`, { email });
 
             if (response.status === 200) {
                 navigate("/reset-password/send-link");

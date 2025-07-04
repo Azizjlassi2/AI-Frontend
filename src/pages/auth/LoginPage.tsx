@@ -2,8 +2,7 @@ import { LockIcon, MailIcon } from "lucide-react";
 import { Link, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import axios from 'axios';
-// import dotenv from 'dotenv';
-// dotenv.config();
+
 
 export function LoginPage() {
   const [email, setEmail] = useState('');
@@ -18,14 +17,15 @@ export function LoginPage() {
     setError('');
 
     try {
-      const response = await axios.post('http://localhost:8080/api/v1/auth/login', {
-        email,
-        password
+      const response = await axios.post(`${import.meta.env.VITE_BACKEND_HOST}/api/v1/auth/login`, {
+        "email": email,
+        "password": password
       }, {
         headers: {
           'Content-Type': 'application/json'
         }
       });
+
       // Stockage du token JWT
       localStorage.setItem('authToken', response.data.token);
       localStorage.setItem('username', response.data.username);
@@ -33,11 +33,15 @@ export function LoginPage() {
       localStorage.setItem('role', response.data.role);
 
 
-      if (response.data.role === "ROLE_CLIENT") {
-        navigate('/client/dashboard')
-      }
-      if (response.data.role === "ROLE_DEVELOPER") {
+      if (response.data.role === "CLIENT") {
+        navigate('/client/dashboard');
+      } else if (response.data.role === "DEVELOPER") {
         navigate('/dev/dashboard');
+      } else if (response.data.role === "ADMIN") {
+        navigate('/admin/dashboard');
+      }
+      else {
+        navigate('/'); // Redirection par défaut
       }
 
 
