@@ -53,11 +53,12 @@ export function RegisterPage() {
                 throw new Error("Veuillez entrer une adresse email valide");
             }
 
-            const response = await axios.post(`${import.meta.env.VITE_BACKEND_HOST}/api/v1/auth/register`, formData, {
+            const response = await axios.post(`${import.meta.env.VITE_BACKEND_HOST}/api/v1/auth/register`, { "username": formData.username, "email": formData.email, "password": formData.password, "role": formData.role }, {
                 headers: { "Content-Type": "application/json" }
             });
-            console.log("Compte créé avec succès :", response);
-            alert("Compte créé avec succès ! Redirection...");
+            alert("Compte créé avec succès !");
+
+
             navigate("/login");
         } catch (error) {
             let errorMessage = "Erreur lors de la création du compte";

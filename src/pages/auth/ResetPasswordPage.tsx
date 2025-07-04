@@ -29,7 +29,6 @@ export function ResetPasswordPage() {
             setLoading(true);
             const response = await axios.post(`${import.meta.env.VITE_BACKEND_HOST}/api/v1/auth/forgot-password/reset`, {
                 token: token,
-                email: email,
                 newPassword: password
             });
 
