@@ -30,7 +30,6 @@ import { AdminModelsPage } from "./pages/admin/AdminModelsPage";
 import { AdminDatasetsPage } from "./pages/admin/AdminDatasetsPage";
 
 import { AdminSettingsPage } from './pages/admin/AdminSettingsPage'
-import { AdminAnalyticsPage } from './pages/admin/AdminAnalyticsPage'
 import { AdminSupportPage } from './pages/admin/AdminSupportPage'
 import { AdminReportsPage } from './pages/admin/AdminReportsPage'
 import { AdminInvoicesPage } from './pages/admin/AdminInvoicesPage'
@@ -95,7 +94,6 @@ function AppContent() {
           <Route path="/admin/users" element={<AdminUsersPage />} />
           <Route path="/admin/models" element={<AdminModelsPage />} />
           <Route path="/admin/datasets" element={<AdminDatasetsPage />} />
-          <Route path="/admin/analytics" element={<AdminAnalyticsPage />} />
           <Route path="/admin/settings" element={<AdminSettingsPage />} />
           <Route path="/admin/support" element={<AdminSupportPage />} />
           <Route path="/admin/reports" element={<AdminReportsPage />} />

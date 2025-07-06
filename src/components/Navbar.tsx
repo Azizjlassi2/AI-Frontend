@@ -11,6 +11,18 @@ export function Navbar() {
   const username = localStorage.getItem("username");
   const role = localStorage.getItem("role");
 
+  // handle token expiration
+  const expiresAt = localStorage.getItem('expiresAt');
+  if (expiresAt && new Date(expiresAt) < new Date()) {
+    localStorage.removeItem("authToken");
+    localStorage.removeItem("username");
+    localStorage.removeItem("email");
+    localStorage.removeItem("role");
+    navigate("/login");
+  }
+
+
+
   const handleLogout = async () => {
     try {
       const token = localStorage.getItem("authToken");
@@ -19,16 +31,13 @@ export function Navbar() {
         return;
       }
 
-      const response = await axios.post("http://localhost:8080/api/v1/auth/logout", {}, {
+      const response = await axios.post(`${import.meta.env.VITE_BACKEND_HOST}/api/v1/auth/logout`, {}, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
         withCredentials: true,
       });
-      if (response.status === 200) {
-        console.log(response.data);
-        console.log("Logout successful");
-      }
+
     } catch (error) {
       console.error("Logout error:", error);
     } finally {

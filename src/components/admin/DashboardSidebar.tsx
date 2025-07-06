@@ -22,13 +22,7 @@ export function DashboardSidebar() {
                     <HomeIcon className="h-5 w-5" />
                     <span>Dashboard</span>
                 </Link>
-                <Link
-                    to="/admin/analytics"
-                    className="flex items-center space-x-3 px-4 py-2 rounded hover:bg-gray-700"
-                >
-                    <BarChart2Icon className="h-5 w-5" />
-                    <span>Analytics</span>
-                </Link>
+
                 <Link
                     to="/admin/users"
                     className="flex items-center space-x-3 px-4 py-2 rounded hover:bg-gray-700"

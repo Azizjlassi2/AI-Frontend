@@ -28,6 +28,7 @@ export function LoginPage() {
 
       // Stockage du token JWT
       localStorage.setItem('authToken', response.data.token);
+      localStorage.setItem('expiresAt', response.data.expiresAt);
       localStorage.setItem('username', response.data.username);
       localStorage.setItem('email', response.data.email);
       localStorage.setItem('role', response.data.role);
