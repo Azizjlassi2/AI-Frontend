@@ -1,8 +1,8 @@
 import { LockIcon, MailIcon } from "lucide-react";
 import { Link, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
-import axios from 'axios';
-
+import { toast, ToastContainer } from "react-toastify";
+import { useAuth } from '../../context/AuthContext';
 
 export function LoginPage() {
   const [email, setEmail] = useState('');
@@ -10,6 +10,7 @@ export function LoginPage() {
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+  const { login } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -17,43 +18,25 @@ export function LoginPage() {
     setError('');
 
     try {
-      const response = await axios.post(`${import.meta.env.VITE_BACKEND_HOST}/api/v1/auth/login`, {
-        "email": email,
-        "password": password
-      }, {
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      });
+      // Fixed: Pass credentials as a single object
+      const authData = await login({ email, password });
 
-      // Stockage du token JWT
-      localStorage.setItem('authToken', response.data.token);
-      localStorage.setItem('expiresAt', response.data.expiresAt);
-      localStorage.setItem('username', response.data.username);
-      localStorage.setItem('email', response.data.email);
-      localStorage.setItem('role', response.data.role);
+      toast.info("Redirection ...");
 
+      const role = authData?.role;
 
-      if (response.data.role === "CLIENT") {
-        navigate('/client/dashboard');
-      } else if (response.data.role === "DEVELOPER") {
-        navigate('/dev/dashboard');
-      } else if (response.data.role === "ADMIN") {
+      if (role === "CLIENT") {
+        navigate('/');
+      } else if (role === "DEVELOPER") {
+        navigate('/developer/dashboard');
+      } else if (role === "ADMIN") {
         navigate('/admin/dashboard');
+      } else {
+        navigate('/');
       }
-      else {
-        navigate('/'); // Redirection par défaut
-      }
-
-
-
 
     } catch (err) {
-      if (axios.isAxiosError(err) && err.response) {
-        setError(err.response.data?.message || 'Erreur de connexion');
-      } else {
-        setError('Erreur de connexion');
-      }
+      setError('Email ou mot de passe incorrect');
     } finally {
       setIsLoading(false);
     }
@@ -61,6 +44,19 @@ export function LoginPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+      <ToastContainer
+        position="top-center"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="colored"
+      />
+
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <div className="text-center">
           <h2 className="text-3xl font-bold text-gray-900">Se connecter</h2>

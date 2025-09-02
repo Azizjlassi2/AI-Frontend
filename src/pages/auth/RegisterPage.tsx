@@ -1,7 +1,8 @@
 import { User, UserPlus } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
-import axios from "axios";
+import axios, { AxiosError } from "axios";
+import { toast, ToastContainer } from 'react-toastify';
 
 type UserRole = "CLIENT" | "DEVELOPER";
 
@@ -40,33 +41,54 @@ export function RegisterPage() {
         }
     };
 
+
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>): Promise<void> => {
         e.preventDefault();
         setIsSubmitting(true);
 
         try {
             if (formData.password !== confirmPassword) {
-                throw new Error("Les mots de passe ne correspondent pas");
+                toast.error("Les mots de passe ne correspondent pas");
             }
 
             if (!isValidEmail(formData.email)) {
-                throw new Error("Veuillez entrer une adresse email valide");
+                toast.error("Veuillez entrer une adresse email valide");
             }
 
-            const response = await axios.post(`${import.meta.env.VITE_BACKEND_HOST}/api/v1/auth/register`, { "username": formData.username, "email": formData.email, "password": formData.password, "role": formData.role }, {
-                headers: { "Content-Type": "application/json" }
-            });
-            alert("Compte créé avec succès !");
+            const response = await axios.post(
+                `${import.meta.env.VITE_BACKEND_HOST}/api/v1/auth/register`,
+                {
+                    username: formData.username,
+                    email: formData.email,
+                    password: formData.password,
+                    role: formData.role,
+                },
+                {
+                    headers: { "Content-Type": "application/json" },
+                }
+            );
 
-
+            toast.success("Compte créé avec succès");
+            toast.info("Redirection ...");
             navigate("/login");
+            console.log(response)
+
         } catch (error) {
-            let errorMessage = "Erreur lors de la création du compte";
-            if (error instanceof Error) errorMessage = error.message;
             if (axios.isAxiosError(error)) {
-                errorMessage = error.response?.data?.message || error.message;
+                // Check for 409 Conflict error
+                if (error.response?.status === 409) {
+                    toast.error("Email déjà utilisé !");
+                } else if (error.response?.data?.message) {
+                    toast.error(error.response.data.message);
+                } else {
+                    toast.error("Erreur inconnue lors de l'inscription.");
+                }
+            } else if (error instanceof Error) {
+                // JS logic errors like password mismatch
+                toast.error(error.message);
+            } else {
+                toast.error("Une erreur inattendue est survenue.");
             }
-            alert(errorMessage);
         } finally {
             setIsSubmitting(false);
         }
@@ -80,9 +102,24 @@ export function RegisterPage() {
                     <p className="mt-2 text-gray-600">Rejoignez AI+ dès aujourd'hui</p>
                 </div>
 
+
+
                 <div className="mt-8 bg-white py-8 px-4 shadow sm:rounded-lg sm:px-8">
                     <form className="space-y-6" onSubmit={handleSubmit}>
                         {/* Sélection du type de compte */}
+                        <ToastContainer
+                            position="top-center"
+                            autoClose={3000}
+                            hideProgressBar={false}
+                            newestOnTop={false}
+                            closeOnClick
+                            rtl={false}
+                            pauseOnFocusLoss
+                            draggable
+                            pauseOnHover
+                            theme="colored"
+                        />
+
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-4">
                                 Type de compte *
@@ -191,6 +228,24 @@ export function RegisterPage() {
                             {isSubmitting ? "Création en cours..." : "Créer mon compte"}
                         </button>
                     </form>
+                    <div className="mt-6">
+                        <div className="relative">
+                            <div className="absolute inset-0 flex items-center">
+                                <div className="w-full border-t border-gray-300" />
+                            </div>
+                            <div className="relative flex justify-center text-sm">
+                                <span className="px-2 bg-white text-gray-500">Ou</span>
+                            </div>
+                        </div>
+                        <div className="mt-6">
+                            <Link
+                                to="/login"
+                                className="w-full inline-flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-700 hover:bg-gray-50"
+                            >
+                                Se connecter
+                            </Link>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

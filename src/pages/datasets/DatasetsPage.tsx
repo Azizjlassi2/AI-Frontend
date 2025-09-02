@@ -230,8 +230,8 @@ export function DatasetsPage() {
                   {/* Header row with top-right star */}
                   <div className="flex justify-between items-start mb-4">
                     <div className="flex items-start">
-                      <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center mr-3 mt-1">
-                        <DatabaseIcon className="h-5 w-5 text-blue-600" />
+                      <div className="h-10 w-10 rounded-full bg-green-100 flex items-center justify-center mr-3 mt-1">
+                        <DatabaseIcon className="h-5 w-5 text-green-600" />
                       </div>
                       <div>
                         <Link
@@ -258,7 +258,7 @@ export function DatasetsPage() {
 
                   {/* Tags */}
                   <div className="flex flex-wrap gap-2 mb-4">
-                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
                       <TagIcon className="h-3 w-3 mr-1" />
                       {dataset.type}
                     </span>
