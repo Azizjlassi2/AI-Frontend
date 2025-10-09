@@ -22,7 +22,7 @@ export function UserDashboardHeader() {
       <div className="px-6 py-3 flex items-center justify-between">
         <div className="flex items-center">
           <Link
-            to="/client/dashboard"
+            to="/"
             className="flex items-center"
             onClick={() => setShowProfileMenu(false)}
           >

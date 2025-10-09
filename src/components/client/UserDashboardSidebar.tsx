@@ -13,49 +13,66 @@ export function UserDashboardSidebar({
       id: 'overview',
       label: "Vue d'ensemble",
       icon: <LayoutDashboard className="h-5 w-5" />,
+      path: "/client/dashboard"
     },
     {
       id: 'subscriptions',
       label: 'Abonnements',
       icon: <CreditCard className="h-5 w-5" />,
+      path: "/client/subscriptions"
+
     },
     {
       id: 'datasets',
       label: 'Mes Datasets',
       icon: <Database className="h-5 w-5" />,
+      path: "/client/datasets"
+
+
     },
     {
       id: 'api-keys',
       label: 'Clés API',
       icon: <Key className="h-5 w-5" />,
+      path: "/client/api-keys"
+
     },
     {
       id: 'billing',
       label: 'Facturation',
       icon: <FileText className="h-5 w-5" />,
+      path: "/client/billing"
+
     },
     {
       id: 'usage',
       label: "Statistiques d'utilisation",
       icon: <BarChart2 className="h-5 w-5" />,
+      path: "/client/usage"
+
     },
     {
       id: 'notifications',
       label: 'Notifications',
       icon: <Bell className="h-5 w-5" />,
+      path: "/client/notifications"
+
     },
     {
       id: 'settings',
       label: 'Paramètres',
       icon: <Settings className="h-5 w-5" />,
+      path: "/client/settings"
+
     },
   ]
   return (
     <aside className="w-64 border-r border-gray-200 min-h-screen bg-white hidden md:block">
       <nav className="p-4 space-y-1">
         {menuItems.map((item) => (
-          <button
+          <Link
             key={item.id}
+            to={item.path}
             onClick={() => onTabChange(item.id)}
             className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-left ${activeTab === item.id ? 'bg-blue-50 text-blue-600' : 'text-gray-700 hover:bg-gray-50'}`}
           >
@@ -70,7 +87,7 @@ export function UserDashboardSidebar({
             {activeTab === item.id && (
               <ChevronRight className="h-4 w-4 ml-auto" />
             )}
-          </button>
+          </Link>
         ))}
       </nav>
       <div className="p-4 mt-8">

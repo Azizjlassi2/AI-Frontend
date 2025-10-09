@@ -21,14 +21,15 @@ import {
     Calendar,
     Zap,
     CreditCard,
-    Check,
     Loader,
+    AlertTriangle,
 } from 'lucide-react'
 import { DeveloperDashboardHeader } from '../../components/developer-dashboard/DeveloperDashboardHeader'
 import { DeveloperDashboardSidebar } from '../../components/developer-dashboard/DeveloperDashboardSidebar'
 import { useError } from '../../context/ErrorContext'
 import { useSuccess } from '../../context/SuccessContext'
 import { useAuth } from '../../context/AuthContext'
+import { DeveloperAccount } from '../../types/auth'
 // Define types to match the Spring DTO
 interface TaskDto {
     id: number
@@ -51,7 +52,7 @@ enum Visibility {
 enum BillingPeriod {
     MONTHLY = 'MONTHLY',
     ANNUAL = 'ANNUAL',
-    PAY_AS_YOU_GO = 'PAY_AS_YOU_GO'
+    WEEKLY = 'WEEKLY',
 
 }
 // Interface for subscription plans
@@ -103,6 +104,10 @@ export function AddModelPage() {
 
     const { error, setError, clearError } = useError();
     const { success, setSuccess, clearSuccess } = useSuccess();
+
+
+    const { account, token } = useAuth();
+    const developer_account = account as DeveloperAccount;
 
     const handleTabChange = (tab: string) => {
         setActiveTab(tab);
@@ -323,8 +328,7 @@ export function AddModelPage() {
             // For pay-as-you-go plans, ensure apiCallsPrice is set
             const planToAdd = {
                 ...newPlan,
-                // If pay-as-you-go but no apiCallsPrice, set a default
-                apiCallsPrice: newPlan.billingPeriod === BillingPeriod.PAY_AS_YOU_GO && !newPlan.apiCallsPrice ? 0.001 : newPlan.apiCallsPrice
+
             };
             setModelData({
                 ...modelData,
@@ -375,7 +379,7 @@ export function AddModelPage() {
                     withCredentials: true,
                 },
             )
-
+            console.log(response)
             if (response.status === 200 || response.status === 201) {
                 setModelData({
                     name: '',
@@ -409,7 +413,7 @@ export function AddModelPage() {
                 })
             }
         } catch (error: any) {
-
+            console.error(error)
             setError({
                 type: 'NETWORK',
                 message: "Une erreur s'est produite lors de l'ajout du modèle."
@@ -426,7 +430,18 @@ export function AddModelPage() {
                 <DeveloperDashboardSidebar activeTab={activeTab} onTabChange={handleTabChange} />
                 <main className="flex-1 p-6">
                     <div className="min-h-screen bg-gray-50 py-8">
-
+                        {!developer_account?.docker_username && !developer_account?.docker_pat && (
+                            <div className="mb-6 bg-red-50 border border-red-200 rounded-lg p-4 flex items-center">
+                                <AlertTriangle className="h-5 w-5 text-red-500 mr-3" />
+                                <p className="text-red-700">Configure your Docker Hub integration to start sharing models , datasets and more with the comunity . You can set it up in your Settings ! </p>
+                            </div>
+                        )}
+                        {!developer_account?.phone_number && (
+                            <div className="mb-6 bg-red-50 border border-red-200 rounded-lg p-4 flex items-center">
+                                <AlertTriangle className="h-5 w-5 text-red-500 mr-3" />
+                                <p className="text-red-700">Configure your phone number so you can send / receive money . You can set it up in your Settings ! </p>
+                            </div>
+                        )}
                         <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-4xl">
                             <div className="bg-white rounded-xl shadow-sm p-8">
                                 <h1 className="text-3xl font-bold flex items-center mb-8">
@@ -475,7 +490,7 @@ export function AddModelPage() {
                                                             image: e.target.value,
                                                         })
                                                     }
-                                                    placeholder="exemple: username/repository:tag"
+                                                    placeholder="exemple: repository:tag"
                                                 />
                                             </div>
                                             <div>
@@ -575,7 +590,7 @@ export function AddModelPage() {
                                                     onChange={(e) =>
                                                         updatePerformance('accuracyScore', e.target.value)
                                                     }
-                                                    placeholder="ex: 95.2%"
+                                                    placeholder="ex: 0.92"
                                                 />
                                             </div>
                                             <div>
@@ -880,9 +895,8 @@ export function AddModelPage() {
                                                         })}>
                                                             <option value={BillingPeriod.MONTHLY}>Mensuel</option>
                                                             <option value={BillingPeriod.ANNUAL}>Annuel</option>
-                                                            <option value={BillingPeriod.PAY_AS_YOU_GO}>
-                                                                Pay-as-you-use
-                                                            </option>
+                                                            <option value={BillingPeriod.WEEKLY}>Hebdomadaire</option>
+
                                                         </select>
                                                     </div>
                                                 </div>
@@ -919,21 +933,7 @@ export function AddModelPage() {
                                                         </select>
                                                     </div>
                                                 </div>
-                                                {/* Conditional fields based on billing period */}
-                                                {newPlan.billingPeriod === BillingPeriod.PAY_AS_YOU_GO ? <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                                    <div>
-                                                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                                                            Prix par appel API (en {newPlan.currency})
-                                                        </label>
-                                                        <input type="number" step="0.0001" min="0" className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500" value={newPlan.apiCallsPrice} onChange={e => setNewPlan({
-                                                            ...newPlan,
-                                                            apiCallsPrice: parseFloat(e.target.value)
-                                                        })} placeholder="ex: 0.001" />
-                                                        <p className="text-xs text-gray-500 mt-1">
-                                                            Prix facturé pour chaque appel API
-                                                        </p>
-                                                    </div>
-                                                </div> : <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                                     <div>
                                                         <label className="block text-sm font-medium text-gray-700 mb-2">
                                                             Limite d'appels API
@@ -946,7 +946,7 @@ export function AddModelPage() {
                                                             Nombre maximum d'appels API inclus dans le plan
                                                         </p>
                                                     </div>
-                                                </div>}
+                                                </div>
                                                 {/* Features section */}
                                                 <div>
                                                     <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -993,9 +993,9 @@ export function AddModelPage() {
                                                                     {plan.name}
                                                                 </h4>
                                                                 <div className="flex items-center mt-1">
-                                                                    {plan.billingPeriod === BillingPeriod.PAY_AS_YOU_GO ? <div className="flex items-center text-gray-600 text-sm">
+                                                                    {plan.billingPeriod === BillingPeriod.WEEKLY ? <div className="flex items-center text-gray-600 text-sm">
                                                                         <Zap className="h-3 w-3 mr-1" />
-                                                                        Pay-as-you-use
+                                                                        Hebdomadaire
                                                                     </div> : <div className="flex items-center text-gray-600 text-sm">
                                                                         <Calendar className="h-3 w-3 mr-1" />
                                                                         {plan.billingPeriod === BillingPeriod.MONTHLY ? 'Mensuel' : 'Annuel'}
@@ -1014,16 +1014,16 @@ export function AddModelPage() {
                                                                     {plan.price}{' '}
                                                                     <span className="text-lg">{plan.currency}</span>
                                                                 </span>
-                                                                {plan.billingPeriod !== BillingPeriod.PAY_AS_YOU_GO && <span className="text-gray-500 text-sm ml-1">
+                                                                {plan.billingPeriod !== BillingPeriod.WEEKLY && <span className="text-gray-500 text-sm ml-1">
                                                                     /
                                                                     {plan.billingPeriod === BillingPeriod.MONTHLY ? 'mois' : 'an'}
                                                                 </span>}
                                                             </div>
-                                                            {plan.billingPeriod === BillingPeriod.PAY_AS_YOU_GO && <div className="text-sm text-gray-600 mt-1">
+                                                            {plan.billingPeriod === BillingPeriod.WEEKLY && <div className="text-sm text-gray-600 mt-1">
                                                                 {plan.apiCallsPrice} {plan.currency} par appel
                                                                 API
                                                             </div>}
-                                                            {plan.billingPeriod !== BillingPeriod.PAY_AS_YOU_GO && plan.apiCallsLimit && <div className="text-sm text-gray-600 mt-1">
+                                                            {plan.billingPeriod !== BillingPeriod.WEEKLY && plan.apiCallsLimit && <div className="text-sm text-gray-600 mt-1">
                                                                 {plan.apiCallsLimit.toLocaleString()} appels
                                                                 API inclus
                                                             </div>}

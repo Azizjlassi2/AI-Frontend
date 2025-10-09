@@ -52,7 +52,9 @@ export function ModelsPage() {
 
 
 
+
   const checkFavorite = (id: number): boolean => {
+
     let isFavorite = false;
     switch (role) {
       case "DEVELOPER":
@@ -109,8 +111,6 @@ export function ModelsPage() {
         setTotalPages(response.totalPages);
         setTotalElements(response.totalElements);
         setIsLoading(false);
-        console.log(response);
-        console.log(models);
       })
       .catch(error => {
         setIsLoading(false);
@@ -175,7 +175,6 @@ export function ModelsPage() {
         });
       })
       .catch((error) => {
-        console.error(error);
         setError({
           message: error.response?.data?.message || "Une erreur est survenue.",
           type: "NETWORK",
@@ -320,20 +319,18 @@ export function ModelsPage() {
                         </div>
 
                         {/* Description */}
-                        <p className="text-gray-600 mb-4">{model.description}</p>
+                        <p className="text-gray-600 mb-4">{model.description.split(" ").slice(0, 10).join(" ") + " ..."}</p>
 
-                        {/* Tasks */}
-                        <div className="flex flex-wrap gap-2 mb-4">
-                          {model.tasks.map(t => (
-                            <span
-                              key={t.id}
-                              className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800"
-                            >
+                        {model.tasks.length > 0 ? (
+                          model.tasks.map(t => (
+                            <span key={t.id} className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
                               <TagIcon className="h-3 w-3 mr-1" />
                               {t.name}
                             </span>
-                          ))}
-                        </div>
+                          ))
+                        ) : (
+                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">Pas de tâches associées</span>
+                        )}
 
                         {/* Footer */}
                         <div className="flex items-center justify-between text-sm text-gray-500">

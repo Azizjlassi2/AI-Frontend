@@ -1,12 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { CreditCard, Calendar, MapPin, Mail, Phone, Lock, CheckCircle, AlertCircle, Zap, ChevronLeft, CreditCard as CreditCardIcon, AlertTriangle } from 'lucide-react';
-// Define subscription plan types
-enum BillingPeriod {
-  MONTHLY = 'MONTHLY',
-  ANNUAL = 'ANNUAL',
-  PAY_AS_YOU_GO = 'PAY_AS_YOU_GO',
-}
+import axios from 'axios';
+import { BillingPeriod } from '../../types/shared';
+import { useAuth } from '../../context/AuthContext';
+import { useSuccess } from '../../context/SuccessContext';
+
 // Interface for subscription plans
 interface SubscriptionPlanDto {
   id?: number;
@@ -22,27 +21,25 @@ interface SubscriptionPlanDto {
 interface Model {
   id: number;
   name: string;
-  creator: {
-    name: string;
+  developer: {
+    username: string;
   };
 }
 // Define payment method types
 enum PaymentMethod {
-  CREDIT_CARD = 'CREDIT_CARD',
-  PAYPAL = 'PAYPAL',
-  FLOUCI = 'FLOUCI',
   KONNECT = 'KONNECT',
 }
 export function ModelCheckoutPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const {
-    modelId
-  } = useParams();
+    id
+  } = useParams<{ id: string }>();
   // Get selected plan from location state or fetch it based on planId query param
   const [selectedPlan, setSelectedPlan] = useState<SubscriptionPlanDto | null>(null);
   const [model, setModel] = useState<Model | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const { username, token, account } = useAuth();
   // Form state
   const [formData, setFormData] = useState({
     cardName: '',
@@ -59,42 +56,45 @@ export function ModelCheckoutPage() {
     phone: ''
   });
   // Payment method state
-  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<PaymentMethod>(PaymentMethod.CREDIT_CARD);
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<PaymentMethod>(PaymentMethod.KONNECT);
   // Validation state
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [agreeTerms, setAgreeTerms] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [paymentSuccess, setPaymentSuccess] = useState(false);
-  // Simulate fetching plan and model data
+  const { success, setSuccess, clearSuccess } = useSuccess();
+
+
   useEffect(() => {
-    // In a real app, you would fetch this data from your API
     const fetchData = async () => {
       setIsLoading(true);
       try {
-        // Simulate API call delay
-        await new Promise(resolve => setTimeout(resolve, 500));
+
+
+        const modelFromState = location.state?.model;
+
         // Get plan from location state if available
         const planFromState = location.state?.selectedPlan;
-        if (planFromState) {
-          setSelectedPlan(planFromState);
-        } else {
-          // Fallback to mock data
-          setSelectedPlan({
-            id: 2,
-            name: 'Plan Standard',
-            description: 'Pour les startups et projets en croissance',
-            price: 49.99,
-            currency: 'TND',
-            billingPeriod: BillingPeriod.MONTHLY,
-            features: ["Accès à l'API avec limites étendues", '50 000 appels API par mois', 'Support par email', "Tableaux de bord d'analyse"],
-            apiCallsLimit: 50000
-          });
-        }
+
+        console.log('Plan from state:', planFromState);
+        console.log('Model from state:', modelFromState);
+        // Fallback to mock data
+        setSelectedPlan({
+          id: planFromState?.id || 1,
+          name: planFromState?.name || "",
+          description: planFromState?.description || "",
+          price: planFromState?.price || "",
+          currency: 'TND',
+          billingPeriod: planFromState?.billingPeriod || "",
+          features: planFromState?.features || [],
+          apiCallsLimit: planFromState?.apiCallsLimit || "",
+        });
+
         setModel({
-          id: Number(modelId) || 1,
-          name: 'ArabicBERT',
-          creator: {
-            name: 'AI Lab Tunisia'
+          id: modelFromState?.id || undefined,
+          name: modelFromState?.name || "",
+          developer: {
+            username: modelFromState?.creator?.name || "",
           }
         });
       } catch (error) {
@@ -104,7 +104,7 @@ export function ModelCheckoutPage() {
       }
     };
     fetchData();
-  }, [location.state, modelId]);
+  }, [location.state, id]);
   // Handle form input changes
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const {
@@ -120,35 +120,6 @@ export function ModelCheckoutPage() {
       setErrors({
         ...errors,
         [name]: ''
-      });
-    }
-  };
-  // Format card number with spaces
-  const formatCardNumber = (value: string) => {
-    const v = value.replace(/\s+/g, '').replace(/[^0-9]/gi, '');
-    const matches = v.match(/\d{4,16}/g);
-    const match = matches && matches[0] || '';
-    const parts = [];
-    for (let i = 0, len = match.length; i < len; i += 4) {
-      parts.push(match.substring(i, i + 4));
-    }
-    if (parts.length) {
-      return parts.join(' ');
-    } else {
-      return value;
-    }
-  };
-  // Handle card number input
-  const handleCardNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const formattedValue = formatCardNumber(e.target.value);
-    setFormData({
-      ...formData,
-      cardNumber: formattedValue
-    });
-    if (errors.cardNumber) {
-      setErrors({
-        ...errors,
-        cardNumber: ''
       });
     }
   };
@@ -177,21 +148,7 @@ export function ModelCheckoutPage() {
     if (!formData.phone.trim()) {
       newErrors.phone = 'Téléphone requis';
     }
-    // Credit card specific validations
-    if (selectedPaymentMethod === PaymentMethod.CREDIT_CARD) {
-      if (!formData.cardName.trim()) {
-        newErrors.cardName = 'Nom sur la carte requis';
-      }
-      if (!formData.cardNumber.trim() || formData.cardNumber.replace(/\s/g, '').length < 16) {
-        newErrors.cardNumber = 'Numéro de carte invalide';
-      }
-      if (!formData.expiryDate.trim() || !/^\d{2}\/\d{2}$/.test(formData.expiryDate)) {
-        newErrors.expiryDate = "Date d'expiration invalide (MM/YY)";
-      }
-      if (!formData.cvv.trim() || !/^\d{3,4}$/.test(formData.cvv)) {
-        newErrors.cvv = 'CVV invalide';
-      }
-    }
+
     if (!agreeTerms) {
       newErrors.terms = 'Vous devez accepter les conditions';
     }
@@ -201,88 +158,78 @@ export function ModelCheckoutPage() {
   // Handle form submission
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    /*
     if (!validateForm()) {
       return;
     }
+      */
     setIsSubmitting(true);
     try {
-      // Simulate payment processing
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      // Simulate different payment scenarios based on some conditions
-      // In a real app, this would be handled by the payment gateway
-      // For demo purposes, let's simulate different payment errors based on some conditions
-      if (formData.cardNumber && formData.cardNumber.endsWith('1111')) {
-        // Simulate card declined error
-        navigate('/payment-error', {
-          state: {
-            errorType: 'CARD_DECLINED'
-          }
-        });
-        return;
-      }
-      if (formData.cardNumber && formData.cardNumber.endsWith('2222')) {
-        // Simulate insufficient funds error
-        navigate('/payment-error', {
-          state: {
-            errorType: 'INSUFFICIENT_FUNDS'
-          }
-        });
-        return;
-      }
-      if (formData.cardNumber && formData.cardNumber.endsWith('3333')) {
-        // Simulate expired card error
-        navigate('/payment-error', {
-          state: {
-            errorType: 'EXPIRED_CARD'
-          }
-        });
-        return;
-      }
-      if (formData.cardNumber && formData.cardNumber.endsWith('4444')) {
-        // Simulate network error
-        navigate('/payment-error', {
-          state: {
-            errorType: 'NETWORK_ERROR'
-          }
-        });
-        return;
-      }
-      // Simulate successful payment
-      setPaymentSuccess(true);
-      // Store subscription info in localStorage (in a real app, this would be stored in a database)
-      const subscriptionData = {
-        id: Math.floor(Math.random() * 1000000),
+      const response = await axios.post(`${import.meta.env.VITE_BACKEND_HOST}/api/v1/subscriptions/subscribe`, {
         modelId: model?.id,
-        modelName: model?.name,
         planId: selectedPlan?.id,
-        planName: selectedPlan?.name,
-        startDate: new Date().toISOString(),
-        price: selectedPlan?.price,
-        currency: selectedPlan?.currency,
-        billingPeriod: selectedPlan?.billingPeriod,
         paymentMethod: selectedPaymentMethod,
-        nextBillingDate: (() => {
-          const date = new Date();
-          if (selectedPlan?.billingPeriod === BillingPeriod.MONTHLY) {
-            date.setMonth(date.getMonth() + 1);
-          } else if (selectedPlan?.billingPeriod === BillingPeriod.ANNUAL) {
-            date.setFullYear(date.getFullYear() + 1);
-          }
-          return date.toISOString();
-        })()
-      };
-      const existingSubscriptions = JSON.parse(localStorage.getItem('userSubscriptions') || '[]');
-      localStorage.setItem('userSubscriptions', JSON.stringify([...existingSubscriptions, subscriptionData]));
-      // Redirect to confirmation page after short delay
-      setTimeout(() => {
-        navigate(`/payment-confirmation/${subscriptionData.id}`, {
-          state: {
-            subscription: subscriptionData,
-            model: model,
-            plan: selectedPlan
-          }
-        });
-      }, 1000);
+        modelName: model?.name,
+        clientId: account?.id,
+        planName: selectedPlan?.name,
+
+      }, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        withCredentials: true,
+      });
+      console.log('Subscription response:', response.data);
+
+      // Show success message and redirect to confirmation page
+      //setPaymentSuccess(true);
+      if (response.data.success === true) {
+        setSuccess({
+          type: 'SUBSCRIPTION_CREATED',
+          message: "Abonnement créé avec succès. Vous allez être redirigé vers la page de confirmation.",
+          redirect: response.data.data
+        })
+      }
+
+
+
+      /*
+     // Simulate successful payment
+     setPaymentSuccess(true);
+     // Store subscription info in Client Account (localStorage for demo purposes)
+     const subscriptionData = {
+       modelName: model?.name,
+       planId: selectedPlan?.id,
+       planName: selectedPlan?.name,
+       startDate: new Date().toISOString(),
+       price: selectedPlan?.price,
+       currency: selectedPlan?.currency,
+       billingPeriod: selectedPlan?.billingPeriod,
+       paymentMethod: selectedPaymentMethod,
+       nextBillingDate: (() => {
+         const date = new Date();
+         if (selectedPlan?.billingPeriod === BillingPeriod.MONTHLY) {
+           date.setMonth(date.getMonth() + 1);
+         } else if (selectedPlan?.billingPeriod === BillingPeriod.ANNUAL) {
+           date.setFullYear(date.getFullYear() + 1);
+         }
+         return date.toISOString();
+       })()
+     };
+     const existingSubscriptions = JSON.parse(localStorage.getItem('userSubscriptions') || '[]');
+     localStorage.setItem('userSubscriptions', JSON.stringify([...existingSubscriptions, subscriptionData]));
+     // Redirect to confirmation page after short delay
+    
+     setTimeout(() => {
+       navigate(`/payment-confirmation/${subscriptionData.id}`, {
+         state: {
+           subscription: subscriptionData,
+           model: model,
+           plan: selectedPlan
+         }
+       });
+     }, 1000);
+     */
     } catch (error) {
       console.error('Payment error:', error);
       setErrors({
@@ -292,26 +239,6 @@ export function ModelCheckoutPage() {
       setIsSubmitting(false);
     }
   };
-  // Handle expiry date input formatting (MM/YY)
-  const handleExpiryDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    let {
-      value
-    } = e.target;
-    value = value.replace(/\D/g, '');
-    if (value.length > 2) {
-      value = value.substring(0, 2) + '/' + value.substring(2, 4);
-    }
-    setFormData({
-      ...formData,
-      expiryDate: value
-    });
-    if (errors.expiryDate) {
-      setErrors({
-        ...errors,
-        expiryDate: ''
-      });
-    }
-  };
   // Get appropriate icon for plan
   const getPlanIcon = (billingPeriod: BillingPeriod) => {
     switch (billingPeriod) {
@@ -319,7 +246,7 @@ export function ModelCheckoutPage() {
         return <Calendar className="h-5 w-5 text-blue-600" />;
       case BillingPeriod.ANNUAL:
         return <Calendar className="h-5 w-5 text-green-600" />;
-      case BillingPeriod.PAY_AS_YOU_GO:
+      case BillingPeriod.WEEKLY:
         return <Zap className="h-5 w-5 text-purple-600" />;
       default:
         return <CreditCard className="h-5 w-5 text-blue-600" />;
@@ -332,8 +259,8 @@ export function ModelCheckoutPage() {
         return 'Mensuel';
       case BillingPeriod.ANNUAL:
         return 'Annuel';
-      case BillingPeriod.PAY_AS_YOU_GO:
-        return 'Pay-as-you-use';
+      case BillingPeriod.WEEKLY:
+        return 'Hebdomadaire';
       default:
         return '';
     }
@@ -365,14 +292,14 @@ export function ModelCheckoutPage() {
       <p className="text-gray-600 mb-6">
         Le plan que vous avez sélectionné n'est pas disponible.
       </p>
-      <button onClick={() => navigate(`/models/${modelId}`)} className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+      <button onClick={() => navigate(`/models/${id}`)} className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
         Retour au modèle
       </button>
     </div>;
   }
   return <div className="min-h-screen bg-gray-50 py-8">
     <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-6xl">
-      <button onClick={() => navigate(`/models/${modelId}`)} className="flex items-center text-gray-600 hover:text-blue-600 mb-6">
+      <button onClick={() => navigate(`/models/${id}`)} className="flex items-center text-gray-600 hover:text-blue-600 mb-6">
         <ChevronLeft className="h-5 w-5 mr-1" />
         Retour au modèle
       </button>
@@ -387,7 +314,7 @@ export function ModelCheckoutPage() {
               <div>
                 <h3 className="font-medium text-gray-900">{model.name}</h3>
                 <p className="text-sm text-gray-600">
-                  par {model.creator.name}
+                  par {model.developer.username}
                 </p>
                 <div className="mt-2 flex items-center">
                   {getPlanIcon(selectedPlan.billingPeriod)}
@@ -399,7 +326,7 @@ export function ModelCheckoutPage() {
               </div>
               <div className="text-right">
                 <div className="text-xl font-bold text-gray-900">
-                  {selectedPlan.billingPeriod === BillingPeriod.PAY_AS_YOU_GO ? <>
+                  {selectedPlan.billingPeriod === BillingPeriod.WEEKLY ? <>
                     {selectedPlan.apiCallsPrice} {selectedPlan.currency}
                     <span className="text-sm font-normal text-gray-600">
                       /appel
@@ -412,7 +339,7 @@ export function ModelCheckoutPage() {
                     </span>
                   </>}
                 </div>
-                {selectedPlan.billingPeriod !== BillingPeriod.PAY_AS_YOU_GO && selectedPlan.apiCallsLimit && <p className="text-sm text-gray-600 mt-1">
+                {selectedPlan.billingPeriod !== BillingPeriod.WEEKLY && selectedPlan.apiCallsLimit && <p className="text-sm text-gray-600 mt-1">
                   {selectedPlan.apiCallsLimit.toLocaleString()} appels API
                   inclus
                 </p>}
@@ -438,29 +365,18 @@ export function ModelCheckoutPage() {
               Méthode de paiement
             </h2>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div className={`border rounded-lg p-4 cursor-pointer hover:bg-gray-50 transition-colors ${selectedPaymentMethod === PaymentMethod.CREDIT_CARD ? 'border-blue-500 bg-blue-50' : 'border-gray-200'}`} onClick={() => handlePaymentMethodChange(PaymentMethod.CREDIT_CARD)}>
-                <div className="flex justify-center mb-3">
-                  <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/Visa_Inc._logo.svg/2560px-Visa_Inc._logo.svg.png" alt="Credit Card" className="h-8" />
-                </div>
-                <p className="text-center text-sm font-medium">
-                  Carte bancaire
-                </p>
-              </div>
-              <div className={`border rounded-lg p-4 cursor-pointer hover:bg-gray-50 transition-colors ${selectedPaymentMethod === PaymentMethod.PAYPAL ? 'border-blue-500 bg-blue-50' : 'border-gray-200'}`} onClick={() => handlePaymentMethodChange(PaymentMethod.PAYPAL)}>
-                <div className="flex justify-center mb-3">
-                  <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/b/b5/PayPal.svg/1280px-PayPal.svg.png" alt="PayPal" className="h-8" />
-                </div>
-                <p className="text-center text-sm font-medium">PayPal</p>
-              </div>
+              {/* Payment Method Options */}
+              {/*
               <div className={`border rounded-lg p-4 cursor-pointer hover:bg-gray-50 transition-colors ${selectedPaymentMethod === PaymentMethod.FLOUCI ? 'border-blue-500 bg-blue-50' : 'border-gray-200'}`} onClick={() => handlePaymentMethodChange(PaymentMethod.FLOUCI)}>
                 <div className="flex justify-center mb-3">
-                  <img src="https://flouci.com/assets/images/logo.png" alt="Flouci" className="h-8" />
+                  <img src="https://cdn.brandfetch.io/idZWBxd8fZ/w/1843/h/500/theme/dark/logo.png?c=1bxid64Mup7aczewSAYMX&t=1748973745923" alt="Flouci" className="h-8" />
                 </div>
                 <p className="text-center text-sm font-medium">Flouci</p>
               </div>
+              */}
               <div className={`border rounded-lg p-4 cursor-pointer hover:bg-gray-50 transition-colors ${selectedPaymentMethod === PaymentMethod.KONNECT ? 'border-blue-500 bg-blue-50' : 'border-gray-200'}`} onClick={() => handlePaymentMethodChange(PaymentMethod.KONNECT)}>
                 <div className="flex justify-center mb-3">
-                  <img src="https://www.konnect.network/images/konnect.png" alt="Konnect" className="h-8" />
+                  <img src="https://s3.eu-west-3.amazonaws.com/konnect.network.public/logo_konnect_23a791d66b.svg" alt="Konnect" className="h-8" />
                 </div>
                 <p className="text-center text-sm font-medium">Konnect</p>
               </div>
@@ -473,9 +389,8 @@ export function ModelCheckoutPage() {
                 </div>
                 <div className="ml-3">
                   <p className="text-sm text-blue-700">
-                    {selectedPaymentMethod === PaymentMethod.CREDIT_CARD && 'Nous acceptons Visa, Mastercard et American Express. Vos informations de paiement sont sécurisées.'}
-                    {selectedPaymentMethod === PaymentMethod.PAYPAL && 'Vous serez redirigé vers PayPal pour compléter votre paiement en toute sécurité.'}
-                    {selectedPaymentMethod === PaymentMethod.FLOUCI && 'Flouci est une solution de paiement électronique tunisienne. Vous serez redirigé vers leur plateforme.'}
+
+                    {/* {selectedPaymentMethod === PaymentMethod.FLOUCI && 'Flouci est une solution de paiement électronique tunisienne. Vous serez redirigé vers leur plateforme.'} */}
                     {selectedPaymentMethod === PaymentMethod.KONNECT && 'Konnect est un service de paiement mobile de la Banque Internationale Arabe de Tunisie (BIAT).'}
                   </p>
                 </div>
@@ -483,71 +398,7 @@ export function ModelCheckoutPage() {
             </div>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {/* Payment information - Only show for credit card */}
-            {selectedPaymentMethod === PaymentMethod.CREDIT_CARD && <div>
-              <h2 className="text-lg font-semibold mb-4 flex items-center">
-                <CreditCard className="h-5 w-5 mr-2 text-blue-600" />
-                Informations de paiement
-              </h2>
-              <div className="space-y-4">
-                <div>
-                  <label htmlFor="cardName" className="block text-sm font-medium text-gray-700 mb-1">
-                    Nom sur la carte *
-                  </label>
-                  <input type="text" id="cardName" name="cardName" value={formData.cardName} onChange={handleInputChange} className={`w-full px-4 py-2 border ${errors.cardName ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:ring-blue-500 focus:border-blue-500`} placeholder="Nom complet tel qu'il apparaît sur la carte" />
-                  {errors.cardName && <p className="mt-1 text-sm text-red-600">
-                    {errors.cardName}
-                  </p>}
-                </div>
-                <div>
-                  <label htmlFor="cardNumber" className="block text-sm font-medium text-gray-700 mb-1">
-                    Numéro de carte *
-                  </label>
-                  <div className={`flex items-center w-full px-4 py-2 border ${errors.cardNumber ? 'border-red-500' : 'border-gray-300'} rounded-lg focus-within:ring-blue-500 focus-within:border-blue-500`}>
-                    <input type="text" id="cardNumber" name="cardNumber" value={formData.cardNumber} onChange={handleCardNumberChange} className="flex-grow focus:outline-none" placeholder="1234 5678 9012 3456" maxLength={19} />
-                    <div className="flex space-x-1">
-                      <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/Visa_Inc._logo.svg/2560px-Visa_Inc._logo.svg.png" alt="Visa" className="h-6" />
-                      <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/2a/Mastercard-logo.svg/1280px-Mastercard-logo.svg.png" alt="Mastercard" className="h-6" />
-                    </div>
-                  </div>
-                  {errors.cardNumber && <p className="mt-1 text-sm text-red-600">
-                    {errors.cardNumber}
-                  </p>}
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label htmlFor="expiryDate" className="block text-sm font-medium text-gray-700 mb-1">
-                      Date d'expiration *
-                    </label>
-                    <input type="text" id="expiryDate" name="expiryDate" value={formData.expiryDate} onChange={handleExpiryDateChange} className={`w-full px-4 py-2 border ${errors.expiryDate ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:ring-blue-500 focus:border-blue-500`} placeholder="MM/YY" maxLength={5} />
-                    {errors.expiryDate && <p className="mt-1 text-sm text-red-600">
-                      {errors.expiryDate}
-                    </p>}
-                  </div>
-                  <div>
-                    <label htmlFor="cvv" className="block text-sm font-medium text-gray-700 mb-1">
-                      CVV *
-                    </label>
-                    <input type="text" id="cvv" name="cvv" value={formData.cvv} onChange={e => {
-                      const value = e.target.value.replace(/\D/g, '');
-                      setFormData({
-                        ...formData,
-                        cvv: value
-                      });
-                      if (errors.cvv) {
-                        setErrors({
-                          ...errors,
-                          cvv: ''
-                        });
-                      }
-                    }} className={`w-full px-4 py-2 border ${errors.cvv ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:ring-blue-500 focus:border-blue-500`} placeholder="123" maxLength={4} />
-                    {errors.cvv && <p className="mt-1 text-sm text-red-600">
-                      {errors.cvv}
-                    </p>}
-                  </div>
-                </div>
-              </div>
-            </div>}
+
             {/* Billing information - Always show */}
             <div>
               <h2 className="text-lg font-semibold mb-4 flex items-center">
@@ -674,7 +525,7 @@ export function ModelCheckoutPage() {
                 Traitement en cours...
               </> : <>
                 Payer{' '}
-                {selectedPlan.billingPeriod === BillingPeriod.PAY_AS_YOU_GO ? 'et activer le compte' : `${selectedPlan.price} ${selectedPlan.currency}`}
+                {`${selectedPlan.price} ${selectedPlan.currency}`}
               </>}
             </button>
           </div>

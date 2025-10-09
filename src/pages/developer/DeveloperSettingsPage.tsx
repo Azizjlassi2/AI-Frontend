@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { User, Lock, Bell, Globe, CreditCard, Key, Save, Check, AlertTriangle, Phone, Home, Settings as SettingsIcon, Boxes, Shield, EyeOff, Eye } from 'lucide-react';
+import { User, Lock, Bell, Globe, CreditCard, Key, Save, Check, AlertTriangle, Phone, Home, Settings as SettingsIcon, Boxes, Shield, EyeOff, Eye, FileText, Wallet } from 'lucide-react';
 import { DeveloperDashboardHeader } from '../../components/developer-dashboard/DeveloperDashboardHeader';
 import { DeveloperDashboardSidebar } from '../../components/developer-dashboard/DeveloperDashboardSidebar';
 import axios from 'axios';
@@ -45,9 +45,6 @@ interface UserData {
     createdAt: string;
 }
 
-
-
-
 interface DeveloperSettings {
     language: string;
     notifications: {
@@ -89,12 +86,14 @@ export function DeveloperSettingsPage() {
     const [showToken, setShowToken] = useState(false)
     const dockerPatRef = useRef<string>('');
 
+    const [konnectWalletId, setKonnectWalletId] = useState('')
 
     const navigate = useNavigate()
 
-    const { username, email, role, account, createdAt } = useAuth();
+    const { username, email, role, account, createdAt, token } = useAuth();
 
     const developer_account = account as DeveloperAccount;
+
     const [userData, setUserData] = useState<UserData | null>({
         email: email,
         username: username,
@@ -103,6 +102,7 @@ export function DeveloperSettingsPage() {
         createdAt: createdAt
 
     });
+
 
 
     // Initialize settings with default values
@@ -202,7 +202,8 @@ export function DeveloperSettingsPage() {
                 linkedin: userData.account.linkedin,
                 github: userData.account.github,
                 docker_username: userData.account.docker_username,
-                docker_pat: dockerPatRef.current
+                docker_pat: dockerPatRef.current,
+                konnect_wallet_id: konnectWalletId,
             };
 
             const payloadUser = {
@@ -211,26 +212,24 @@ export function DeveloperSettingsPage() {
 
 
 
-            console.log(payloadAccount)
             // Send PUT request to backend API
             const responseAccount = await axios.put(
                 `${import.meta.env.VITE_BACKEND_HOST}/api/v1/account`,
                 payloadAccount,
                 {
                     headers: {
-                        Authorization: `Bearer ${localStorage.getItem('authToken')}`,
+                        Authorization: `Bearer ${token}`,
                         'Content-Type': 'application/json'
                     },
                     withCredentials: true
                 }
             );
-            console.log(responseAccount)
             const responseUser = await axios.put(
                 `${import.meta.env.VITE_BACKEND_HOST}/api/v1/users`,
                 payloadUser,
                 {
                     headers: {
-                        Authorization: `Bearer ${localStorage.getItem('authToken')}`,
+                        Authorization: `Bearer ${token}`,
                         'Content-Type': 'application/json'
                     },
                     withCredentials: true
@@ -304,13 +303,12 @@ export function DeveloperSettingsPage() {
                 payload,
                 {
                     headers: {
-                        Authorization: `Bearer ${localStorage.getItem('authToken')}`,
+                        Authorization: `Bearer ${token}`,
                         'Content-Type': 'application/json'
                     },
                     withCredentials: true
                 }
             );
-            console.log(response)
 
             // Handle success
             if (response.status >= 200 && response.status < 300) {
@@ -349,17 +347,6 @@ export function DeveloperSettingsPage() {
         }
     };
 
-
-    const handleSetDefaultPaymentMethod = (id: string) => {
-        setPaymentMethods(paymentMethods.map(method => ({
-            ...method,
-            isDefault: method.id === id
-        })));
-    };
-
-    const handleRemovePaymentMethod = (id: string) => {
-        setPaymentMethods(paymentMethods.filter(method => method.id !== id));
-    };
 
     // Update account details handler
     const handleAccountUpdate = (field: keyof DeveloperAccount, value: string) => {
@@ -410,6 +397,18 @@ export function DeveloperSettingsPage() {
                 <DeveloperDashboardSidebar activeTab={activeTab} onTabChange={handleTabChange} />
                 <main className="flex-1 p-6">
                     <div className="container mx-auto max-w-6xl">
+                        {!developer_account?.docker_username && !developer_account?.docker_pat && (
+                            <div className="mb-6 bg-red-50 border border-red-200 rounded-lg p-4 flex items-center">
+                                <AlertTriangle className="h-5 w-5 text-red-500 mr-3" />
+                                <p className="text-red-700">Configure your Docker Hub integration to start sharing models , datasets and more with the comunity . You can set it up in your Settings ! </p>
+                            </div>
+                        )}
+                        {!developer_account?.phone_number && (
+                            <div className="mb-6 bg-red-50 border border-red-200 rounded-lg p-4 flex items-center">
+                                <AlertTriangle className="h-5 w-5 text-red-500 mr-3" />
+                                <p className="text-red-700">Configure your phone number so you can send / receive money . You can set it up in your Settings ! </p>
+                            </div>
+                        )}
                         {saveSuccess && (
                             <div className="mb-6 bg-green-50 border border-green-200 rounded-lg p-4 flex items-center">
                                 <Check className="h-5 w-5 text-green-500 mr-3" />
@@ -761,6 +760,102 @@ export function DeveloperSettingsPage() {
                                             handleSaveSettings={handleSaveSettings}
                                             loading={loading}
                                         />
+                                    )}
+                                    {/* Billing Settings */}
+                                    {settingsTab === 'billing' && (
+                                        <div>
+                                            <h2 className="text-xl font-bold text-gray-900 mb-6">
+                                                Facturation
+                                            </h2>
+                                            {/* Konnect.network Wallet ID Section */}
+                                            <div className="bg-gray-50 p-4 rounded-lg mb-6">
+                                                <h3 className="text-lg font-medium text-gray-900 mb-4">
+                                                    Portefeuille Konnect.network
+                                                </h3>
+                                                <div className="bg-blue-50 border-l-4 border-blue-500 p-4 mb-4">
+                                                    <div className="flex">
+                                                        <div className="flex-shrink-0">
+                                                            <AlertTriangle className="h-5 w-5 text-blue-500" />
+                                                        </div>
+                                                        <div className="ml-3">
+                                                            <p className="text-sm text-blue-700">
+                                                                Konnect.network est actuellement la seule méthode de
+                                                                paiement disponible sur la plateforme.
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div className="mb-4">
+                                                    <label
+                                                        htmlFor="konnect-wallet-id"
+                                                        className="block text-sm font-medium text-gray-700 mb-1"
+                                                    >
+                                                        ID de votre portefeuille Konnect.network
+                                                    </label>
+                                                    <div className="flex">
+                                                        <span className="inline-flex items-center px-3 py-2 rounded-l-md border border-r-0 border-gray-300 bg-gray-50 text-gray-500">
+                                                            <Wallet className="h-4 w-4" />
+                                                        </span>
+                                                        <input
+                                                            type="text"
+                                                            id="konnect-wallet-id"
+                                                            className="w-full px-3 py-2 border border-gray-300 rounded-r-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-900"
+                                                            value={konnectWalletId}
+                                                            onChange={(e) => setKonnectWalletId(e.target.value)}
+                                                            placeholder="Entrez votre ID de portefeuille Konnect.network"
+                                                        />
+                                                    </div>
+                                                    <p className="mt-1 text-sm text-gray-500">
+                                                        Cet identifiant est nécessaire pour recevoir vos
+                                                        paiements sur la plateforme.
+                                                    </p>
+                                                </div>
+                                                <button
+                                                    type="button"
+                                                    className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                                                    onClick={handleSaveProfile}
+                                                    disabled={loading}
+                                                >
+                                                    {loading ? (
+                                                        <svg
+                                                            className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
+                                                            xmlns="http://www.w3.org/2000/svg"
+                                                            fill="none"
+                                                            viewBox="0 0 24 24"
+                                                        >
+                                                            <circle
+                                                                className="opacity-25"
+                                                                cx="12"
+                                                                cy="12"
+                                                                r="10"
+                                                                stroke="currentColor"
+                                                                strokeWidth="4"
+                                                            ></circle>
+                                                            <path
+                                                                className="opacity-75"
+                                                                fill="currentColor"
+                                                                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                                                            ></path>
+                                                        </svg>
+                                                    ) : (
+                                                        <Save className="h-4 w-4 mr-2" />
+                                                    )}
+                                                    Enregistrer
+                                                </button>
+                                            </div>
+                                            <div className="bg-gray-50 p-4 rounded-lg mb-6">
+                                                <h3 className="text-lg font-medium text-gray-900 mb-4">
+                                                    Historique de facturation
+                                                </h3>
+                                                <Link
+                                                    to="/user/invoices"
+                                                    className="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
+                                                >
+                                                    <FileText className="h-4 w-4 mr-2" />
+                                                    Voir toutes les factures
+                                                </Link>
+                                            </div>
+                                        </div>
                                     )}
 
                                     {/* Other settings sections (Notifications, Preferences, etc.) */}

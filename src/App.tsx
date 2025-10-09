@@ -20,6 +20,7 @@ import { ResetLinkSentPage } from "./pages/auth/ResetLinkSentPage";
 import { ResetPasswordPage } from "./pages/auth/ResetPasswordPage";
 import { AddDatasetPage } from "./pages/datasets/AddDatasetPage";
 
+
 import { AddModelPage } from "./pages/models/AddModelPage";
 import { ModelsPage } from "./pages/models/ModelsPage";
 import { ModelDetailPage } from "./pages/models/ModelDetailPage";
@@ -62,6 +63,10 @@ import { DeveloperUpdateModelPage } from "./pages/developer/DeveloperUpdateModel
 import { DeveloperModelDetailPage } from "./pages/developer/DeveloperModelDetailsPage";
 
 
+import { ClientSubscriptionsPage } from "./pages/client/ClientSubscriptionsPage";
+import { ClientModelUsageStatsPage } from "./pages/client/ClientModelUsageStatsPage";
+
+
 function AppContent() {
   const location = useLocation();
   const isAdminRoute = location.pathname.startsWith("/admin");
@@ -80,7 +85,7 @@ function AppContent() {
           <Route path="/models/:id" element={<ModelDetailPage />} />
           <Route path="/models/test/:modelId" element={<ModelTestingPage />} />
           <Route path="/models/:id/subscriptions" element={<SubscriptionManagementPage />} />
-          <Route path="/developer/models/checkout/:modelId" element={<ModelCheckoutPage />} />
+          <Route path="/models/checkout/:id" element={<ModelCheckoutPage />} />
 
 
           <Route path="/datasets" element={<DatasetsPage />} />
@@ -122,6 +127,9 @@ function AppContent() {
           <Route path="/client/dashboard" element={<ClientDashboardPage />} />
           <Route path="/client/settings" element={<ClientSettingsPage />} />
           <Route path="/client/profile" element={<ClientProfilePage />} />
+          <Route path="/client/subscriptions" element={<ClientSubscriptionsPage />} />
+          <Route path="/client/models/:modelId/usage" element={<ClientModelUsageStatsPage />} />
+
 
 
 

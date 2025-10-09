@@ -12,62 +12,8 @@ import { AlertCircle } from 'lucide-react';
 import { Key } from 'lucide-react';
 import { Database } from 'lucide-react';
 
-export enum BillingPeriod {
-    MONTHLY = 'MONTHLY',
-    ANNUAL = 'ANNUAL',
-    PAY_AS_YOU_GO = 'PAY_AS_YOU_GO',
-}
-export enum SubscriptionStatus {
-    ACTIVE = 'ACTIVE',
-    CANCELED = 'CANCELED',
-    EXPIRED = 'EXPIRED',
-    PENDING = 'PENDING',
-}
-export interface Subscription {
-    id: number;
-    modelId: number;
-    modelName: string;
-    planId: number;
-    planName: string;
-    startDate: string;
-    price: number;
-    currency: string;
-    billingPeriod: BillingPeriod;
-    nextBillingDate: string;
-    status?: SubscriptionStatus;
-    usageData?: {
-        apiCallsUsed: number;
-        apiCallsLimit?: number;
-        lastUsed?: string;
-    };
-}
-export interface Invoice {
-    id: string;
-    subscriptionId: number;
-    modelName: string;
-    planName: string;
-    date: string;
-    amount: number;
-    currency: string;
-    status: 'PAID' | 'PENDING' | 'FAILED' | 'REFUNDED';
-}
-export interface Notification {
-    id: number;
-    type: 'INFO' | 'WARNING' | 'SUCCESS' | 'ERROR';
-    title: string;
-    message: string;
-    date: string;
-    read: boolean;
-    link?: string;
-}
-export interface ActivityItem {
-    id: number;
-    type: 'MODEL_USAGE' | 'SUBSCRIPTION' | 'PAYMENT' | 'SYSTEM';
-    action: string;
-    target: string;
-    date: string;
-    details?: string;
-}
+import { BillingPeriod, SubscriptionStatus, Invoice, ActivityItem, Notification, Subscription } from '../../types/shared';
+
 export interface UserDashboardData {
     user: {
         id: number;
@@ -357,7 +303,7 @@ export function ClientDashboardPage() {
                             Gérez vos abonnements aux modèles AI+
                         </p>
                         <div className="mt-4">
-                            <button onClick={() => navigate('/user/subscriptions')} className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                            <button onClick={() => navigate('/client/subscriptions')} className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
                                 Voir tous mes abonnements
                             </button>
                         </div>

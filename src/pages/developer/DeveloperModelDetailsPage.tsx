@@ -136,7 +136,6 @@ export function DeveloperModelDetailPage() {
                     },
                 })
                 const data = response.data.data;
-                console.log(data)
 
                 // Mock model data
                 const mockModel: Model = {
@@ -222,7 +221,14 @@ export function DeveloperModelDetailPage() {
                 }
                 setModel(mockModel)
             } catch (err) {
-                console.error('Error fetching model:', err)
+                if (axios.isAxiosError(err)) {
+                    if (err.response?.status === 404) {
+                        return setError({
+                            type: "NOT_FOUND",
+                            message: 'Modèle non trouvé'
+                        })
+                    }
+                }
                 setError({
                     type: "SERVER",
                     message: 'Une erreur est survenue lors du chargement des données du modèle'
@@ -432,23 +438,7 @@ export function DeveloperModelDetailPage() {
                                                     <p className="text-2xl font-bold text-gray-900">
                                                         {formatNumber(model.usage.uniqueUsers)}
                                                     </p>
-                                                    <div className="flex items-center ml-2">
-                                                        {model.usage.usersTrend > 0 ? (
-                                                            <div className="flex items-center text-green-600">
-                                                                <ArrowUpRight className="h-4 w-4" />
-                                                                <span className="text-xs">
-                                                                    +{model.usage.usersTrend}%
-                                                                </span>
-                                                            </div>
-                                                        ) : (
-                                                            <div className="flex items-center text-red-600">
-                                                                <ArrowDownRight className="h-4 w-4" />
-                                                                <span className="text-xs">
-                                                                    {model.usage.usersTrend}%
-                                                                </span>
-                                                            </div>
-                                                        )}
-                                                    </div>
+
                                                 </div>
                                             </div>
                                         </div>
@@ -464,23 +454,7 @@ export function DeveloperModelDetailPage() {
                                                     <p className="text-2xl font-bold text-gray-900">
                                                         {formatNumber(model.usage.totalCalls)}
                                                     </p>
-                                                    <div className="flex items-center ml-2">
-                                                        {model.usage.callsTrend > 0 ? (
-                                                            <div className="flex items-center text-green-600">
-                                                                <ArrowUpRight className="h-4 w-4" />
-                                                                <span className="text-xs">
-                                                                    +{model.usage.callsTrend}%
-                                                                </span>
-                                                            </div>
-                                                        ) : (
-                                                            <div className="flex items-center text-red-600">
-                                                                <ArrowDownRight className="h-4 w-4" />
-                                                                <span className="text-xs">
-                                                                    {model.usage.callsTrend}%
-                                                                </span>
-                                                            </div>
-                                                        )}
-                                                    </div>
+
                                                 </div>
                                             </div>
                                         </div>
@@ -496,23 +470,7 @@ export function DeveloperModelDetailPage() {
                                                     <p className="text-2xl font-bold text-gray-900">
                                                         {model.revenue.totalRevenue} TND
                                                     </p>
-                                                    <div className="flex items-center ml-2">
-                                                        {model.revenue.revenueTrend > 0 ? (
-                                                            <div className="flex items-center text-green-600">
-                                                                <ArrowUpRight className="h-4 w-4" />
-                                                                <span className="text-xs">
-                                                                    +{model.revenue.revenueTrend}%
-                                                                </span>
-                                                            </div>
-                                                        ) : (
-                                                            <div className="flex items-center text-red-600">
-                                                                <ArrowDownRight className="h-4 w-4" />
-                                                                <span className="text-xs">
-                                                                    {model.revenue.revenueTrend}%
-                                                                </span>
-                                                            </div>
-                                                        )}
-                                                    </div>
+
                                                 </div>
                                             </div>
                                         </div>
@@ -528,23 +486,7 @@ export function DeveloperModelDetailPage() {
                                                     <p className="text-2xl font-bold text-gray-900">
                                                         {formatNumber(model.revenue.subscriptions)}
                                                     </p>
-                                                    <div className="flex items-center ml-2">
-                                                        {model.revenue.subscriptionsTrend > 0 ? (
-                                                            <div className="flex items-center text-green-600">
-                                                                <ArrowUpRight className="h-4 w-4" />
-                                                                <span className="text-xs">
-                                                                    +{model.revenue.subscriptionsTrend}%
-                                                                </span>
-                                                            </div>
-                                                        ) : (
-                                                            <div className="flex items-center text-red-600">
-                                                                <ArrowDownRight className="h-4 w-4" />
-                                                                <span className="text-xs">
-                                                                    {model.revenue.subscriptionsTrend}%
-                                                                </span>
-                                                            </div>
-                                                        )}
-                                                    </div>
+
                                                 </div>
                                             </div>
                                         </div>
@@ -619,24 +561,7 @@ export function DeveloperModelDetailPage() {
                                                 <div className="text-xl font-bold text-gray-900">
                                                     {model.usage.averageResponseTime}
                                                 </div>
-                                                <div className="flex items-center mt-1">
-                                                    {model.usage.responseTimeTrend < 0 ? (
-                                                        <div className="flex items-center text-green-600 text-xs">
-                                                            <ArrowDownRight className="h-3 w-3 mr-1" />
-                                                            <span>
-                                                                {Math.abs(model.usage.responseTimeTrend)}% plus
-                                                                rapide
-                                                            </span>
-                                                        </div>
-                                                    ) : (
-                                                        <div className="flex items-center text-red-600 text-xs">
-                                                            <ArrowUpRight className="h-3 w-3 mr-1" />
-                                                            <span>
-                                                                {model.usage.responseTimeTrend}% plus lent
-                                                            </span>
-                                                        </div>
-                                                    )}
-                                                </div>
+
                                             </div>
                                             <div className="p-3 bg-gray-50 rounded-lg">
                                                 <div className="text-sm text-gray-500 mb-1">
@@ -645,24 +570,7 @@ export function DeveloperModelDetailPage() {
                                                 <div className="text-xl font-bold text-gray-900">
                                                     {model.usage.errorRate}%
                                                 </div>
-                                                <div className="flex items-center mt-1">
-                                                    {model.usage.errorRateTrend < 0 ? (
-                                                        <div className="flex items-center text-green-600 text-xs">
-                                                            <ArrowDownRight className="h-3 w-3 mr-1" />
-                                                            <span>
-                                                                {Math.abs(model.usage.errorRateTrend)}%
-                                                                d'amélioration
-                                                            </span>
-                                                        </div>
-                                                    ) : (
-                                                        <div className="flex items-center text-red-600 text-xs">
-                                                            <ArrowUpRight className="h-3 w-3 mr-1" />
-                                                            <span>
-                                                                {model.usage.errorRateTrend}% de dégradation
-                                                            </span>
-                                                        </div>
-                                                    )}
-                                                </div>
+
                                             </div>
                                             <div className="p-3 bg-gray-50 rounded-lg">
                                                 <div className="text-sm text-gray-500 mb-1">
@@ -672,23 +580,7 @@ export function DeveloperModelDetailPage() {
                                                     {model.revenue.averageRevenuePerUser}{' '}
                                                     TND
                                                 </div>
-                                                <div className="flex items-center mt-1">
-                                                    {model.revenue.arpuTrend > 0 ? (
-                                                        <div className="flex items-center text-green-600 text-xs">
-                                                            <ArrowUpRight className="h-3 w-3 mr-1" />
-                                                            <span>
-                                                                +{model.revenue.arpuTrend}% d'augmentation
-                                                            </span>
-                                                        </div>
-                                                    ) : (
-                                                        <div className="flex items-center text-red-600 text-xs">
-                                                            <ArrowDownRight className="h-3 w-3 mr-1" />
-                                                            <span>
-                                                                {model.revenue.arpuTrend}% de diminution
-                                                            </span>
-                                                        </div>
-                                                    )}
-                                                </div>
+
                                             </div>
                                         </div>
                                     </div>
@@ -843,7 +735,7 @@ export function DeveloperModelDetailPage() {
                                                                     </div>
                                                                 </div>
                                                                 <div className="text-sm text-gray-500">
-                                                                    {plan.description}
+                                                                    {plan.description.split(" ").slice(0, 10).join(" ") + " ..."}
                                                                 </div>
                                                             </td>
                                                             <td className="px-6 py-4 whitespace-nowrap">

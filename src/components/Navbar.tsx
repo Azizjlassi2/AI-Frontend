@@ -6,8 +6,8 @@ import { useAuth } from '../context/AuthContext';
 export function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const navigate = useNavigate();
   const { isAuthenticated, username, role, logout } = useAuth();
+  const navigate = useNavigate();
 
   const handleLogout = () => {
     logout();
@@ -69,6 +69,13 @@ export function Navbar() {
                       onClick={() => setIsDropdownOpen(false)}
                     >
                       Dashboard
+                    </Link>
+                    <Link
+                      to={role === "CLIENT" ? "/client/profile" : "/developer/profile"}
+                      className="block px-4 py-2 text-gray-700 hover:bg-gray-100"
+                      onClick={() => setIsDropdownOpen(false)}
+                    >
+                      Profile
                     </Link>
                     <Link
                       to={role === "CLIENT" ? "/client/settings" : "/developer/settings"}

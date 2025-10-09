@@ -1,7 +1,7 @@
 // src/context/ErrorContext.tsx
 import React, { createContext, useContext, useState } from "react";
 
-type ErrorType = "AUTH" | "NETWORK" | "SERVER" | "UNKNOWN";
+type ErrorType = "AUTH" | "NETWORK" | "SERVER" | "UNKNOWN" | "NOT_FOUND" | "FORBIDDEN";
 
 interface ErrorState {
     type: ErrorType;

@@ -3,6 +3,12 @@ import { useNavigate } from "react-router-dom";
 import { useSuccess } from "../context/SuccessContext";
 import { CheckCircle, XCircle } from "lucide-react";
 
+/**
+ * A modal component to display success messages.
+ * It shows a success icon, message, and buttons to continue or close the modal.
+ * The modal is displayed when there is a success state in the SuccessContext.
+ * The "Continue" button redirects to a specified link if provided.
+ */
 export const SuccessModal: React.FC = () => {
     const { success, clearSuccess } = useSuccess();
     const navigate = useNavigate();
@@ -28,8 +34,13 @@ export const SuccessModal: React.FC = () => {
                         <button
                             onClick={() => {
                                 clearSuccess();
-                                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-                                navigate(success.redirect!);
+                                // check if the redirect link is external link and not internal link
+                                if (success.redirect!.startsWith("http")) {
+                                    window.location.href = success.redirect!;
+                                    return;
+                                } else {
+                                    navigate(success.redirect!);
+                                }
                             }}
                             className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-xl transition-all shadow-md"
                         >

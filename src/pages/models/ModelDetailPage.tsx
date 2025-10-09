@@ -17,7 +17,7 @@ import { useSuccess } from '../../context/SuccessContext'
 enum BillingPeriod {
   MONTHLY = 'MONTHLY',
   ANNUAL = 'ANNUAL',
-  PAY_AS_YOU_GO = 'PAY_AS_YOU_GO',
+  WEEKLY = 'WEEKLY',
 }
 enum Visibility {
   PUBLIC = 'PUBLIC',
@@ -113,6 +113,7 @@ export function ModelDetailPage() {
     axios.get(`${import.meta.env.VITE_BACKEND_HOST}/api/v1/models/${id}`)
       .then(res => {
         const data = res.data.data
+        console.log(" The Model DATA  ", data)
         setModel({
           name: data.name,
           description: data.description,
@@ -148,6 +149,9 @@ export function ModelDetailPage() {
         })
 
 
+        console.log(data)
+
+
       })
       .catch(error => {
         setError({
@@ -162,8 +166,9 @@ export function ModelDetailPage() {
   const handleSubscribe = () => {
     const selectedPlanData = model.subscriptionPlans.find((plan: SubscriptionPlanDto) => plan.id === selectedPlan)
     if (selectedPlanData) {
-      navigate(`/models/checkout/${model.id}`, {
-        state: { selectedPlan: selectedPlanData }
+      console.log('Selected Plan Data:', selectedPlanData)
+      navigate(`/models/checkout/${id}`, {
+        state: { selectedPlan: selectedPlanData, model: model },
       })
     }
   }
@@ -204,7 +209,7 @@ export function ModelDetailPage() {
     switch (billing) {
       case BillingPeriod.MONTHLY: return <Calendar className="h-5 w-5 text-blue-500" />
       case BillingPeriod.ANNUAL: return <BarChart className="h-5 w-5 text-blue-500" />
-      case BillingPeriod.PAY_AS_YOU_GO: return <Database className="h-5 w-5 text-blue-500" />
+      case BillingPeriod.WEEKLY: return <Database className="h-5 w-5 text-blue-500" />
       default: return null
     }
   }
@@ -245,7 +250,7 @@ export function ModelDetailPage() {
             </div>
             <div className="flex space-x-4">
               <button className="text-gray-600 hover:text-blue-600 flex items-center">
-                <Star className="h-5 w-5 mr-1" /> {model.stats.stars}
+                <Star className="h-5 w-5 mr-1" /> {model.stats.stars ?? 0}
               </button>
 
             </div>
@@ -265,7 +270,6 @@ export function ModelDetailPage() {
             </Link>
           </div>
         </div>
-        {/* Modal si pas authentifié */}
 
 
         {/* === GRID === */}
@@ -342,24 +346,32 @@ export function ModelDetailPage() {
                   {model.subscriptionPlans.map((plan: SubscriptionPlanDto) => (
                     <div
                       key={plan.id}
-                      className={`border-2 rounded-lg ${selectedPlan === plan.id ? "border-blue-500 shadow-md" : "border-gray-200"
+                      className={`border-2 rounded-lg flex flex-col ${selectedPlan === plan.id ? "border-blue-500 shadow-md" : "border-gray-200"
                         }`}
                     >
-                      <div className="p-6">
+                      <div className="p-6 flex flex-col flex-1">
                         <div className="flex items-center mb-3">
                           {getPlanIcon(plan.billingPeriod)}
                           <h3 className="text-xl font-semibold ml-2">{plan.name}</h3>
                         </div>
 
                         <div className="mb-2 text-2xl font-bold">
-                          {plan.billingPeriod === BillingPeriod.PAY_AS_YOU_GO
-                            ? `${plan.apiCallsPrice} ${plan.currency}/appel`
-                            : `${plan.price} ${plan.currency}/${plan.billingPeriod === BillingPeriod.MONTHLY ? "mois" : "an"
+                          {plan.billingPeriod === BillingPeriod.WEEKLY
+                            ? `${plan.price} ${plan.currency}/semaine`
+                            : `${plan.price} ${plan.currency ?? "TND"}/${plan.billingPeriod === BillingPeriod.MONTHLY ? "mois" : "an"
                             }`}
                         </div>
 
                         <p className="text-gray-600 mb-4">{plan.description}</p>
 
+                        {plan.apiCallsLimit && (
+                          <div className="flex items-start text-gray-600">
+                            <div className="flex items-center">
+                              <CheckCircle className="h-5 w-5 text-blue-500 mr-2" />
+                              Limite d'appels API : {plan.apiCallsLimit.toLocaleString()} appels
+                            </div>
+                          </div>
+                        )}
                         <ul className="mb-4 space-y-2">
                           {plan.features.map((feature, idx) => (
                             <li key={idx} className="flex items-start text-gray-600">
@@ -370,7 +382,7 @@ export function ModelDetailPage() {
 
                         <button
                           onClick={() => handleSelectPlan(plan.id!)}
-                          className={`w-full py-2 px-4 rounded-lg ${selectedPlan === plan.id
+                          className={`mt-auto w-full py-2 px-4 rounded-lg ${selectedPlan === plan.id
                             ? "bg-blue-600 text-white"
                             : "bg-gray-100 text-gray-800 hover:bg-gray-200"
                             }`}
@@ -396,6 +408,7 @@ export function ModelDetailPage() {
                 </div>
               )}
             </div>
+
 
             {/* API Endpoints */}
             <div className="bg-white rounded-xl shadow-sm p-6">

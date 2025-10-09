@@ -1,7 +1,8 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, Calendar, CreditCard, Zap } from 'lucide-react';
-import { Subscription, BillingPeriod } from '../../pages/client/ClientDashboardPage';
+
+import { BillingPeriod, Subscription } from '../../types/shared';
 interface ActiveSubscriptionsWidgetProps {
   subscriptions: Subscription[];
 }

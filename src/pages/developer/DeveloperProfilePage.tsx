@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { User, Mail, Phone, MapPin, Calendar, Edit, ChevronRight, Clock, DollarSign, Database, Globe, Award, Users, Star, Bot } from 'lucide-react';
+import { User, Mail, Phone, MapPin, Calendar, Edit, ChevronRight, Clock, DollarSign, Database, Globe, Award, Users, Star, Bot, AlertTriangle } from 'lucide-react';
 import { DeveloperDashboardHeader } from '../../components/developer-dashboard/DeveloperDashboardHeader';
 import { DeveloperDashboardSidebar } from '../../components/developer-dashboard/DeveloperDashboardSidebar';
 import { useAuth } from '../../context/AuthContext';
@@ -54,7 +54,6 @@ export function DeveloperProfilePage() {
             refreshAccount();
             setLoading(true);
             try {
-                await new Promise(resolve => setTimeout(resolve, 600));
                 // Mock profile data
                 const profile: DeveloperProfile = {
                     name: username,
@@ -211,6 +210,18 @@ export function DeveloperProfilePage() {
             <DeveloperDashboardSidebar activeTab={activeTab} onTabChange={handleTabChange} />
             <main className="flex-1 p-6">
                 <div className="container mx-auto max-w-6xl">
+                    {!developer_account?.docker_username && !developer_account?.docker_pat && (
+                        <div className="mb-6 bg-red-50 border border-red-200 rounded-lg p-4 flex items-center">
+                            <AlertTriangle className="h-5 w-5 text-red-500 mr-3" />
+                            <p className="text-red-700">Configure your Docker Hub integration to start sharing models , datasets and more with the comunity . You can set it up in your Settings ! </p>
+                        </div>
+                    )}
+                    {!developer_account?.phone_number && (
+                        <div className="mb-6 bg-red-50 border border-red-200 rounded-lg p-4 flex items-center">
+                            <AlertTriangle className="h-5 w-5 text-red-500 mr-3" />
+                            <p className="text-red-700">Configure your phone number so you can send / receive money . You can set it up in your Settings ! </p>
+                        </div>
+                    )}
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                         {/* Profile Card */}
                         <div className="md:col-span-1">
@@ -427,10 +438,10 @@ export function DeveloperProfilePage() {
                                         </h3>
                                         {developer_account.models && developer_account.models.length > 0 ? (
                                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                                {developer_account.models.map((model, idModel) => (
-                                                    <Link to={`/developer/models/${idModel}`} key={idModel} className="border border-gray-200 rounded-lg p-4 hover:border-blue-500 hover:shadow-sm transition-all">
+                                                {developer_account.models.map((model) => (
+                                                    <Link to={`/developer/models/${model.id}`} key={model.id} className="border border-gray-200 rounded-lg p-4 hover:border-blue-500 hover:shadow-sm transition-all">
                                                         <h4 className="font-medium text-gray-900">{model.name}</h4>
-                                                        <p className="text-sm text-gray-500 mb-2">{model.description}</p>
+                                                        <p className="text-sm text-gray-500 mb-2">{model.description.split(" ").slice(0, 10).join(" ") + " ..."}</p>
 
                                                     </Link>
                                                 ))}

@@ -1,7 +1,7 @@
 // src/context/ErrorContext.tsx
 import React, { createContext, useContext, useState } from "react";
 
-type SuccessType = "MODEL_ADDED" | "MODEL_UPDATED" | "MODEL_DELETED" | "DATASET_ADDED" | "DATASET_UPDATED" | "DATASET_DELETED" | "MODEL_FAVORITED";
+type SuccessType = "MODEL_ADDED" | "MODEL_UPDATED" | "MODEL_DELETED" | "DATASET_ADDED" | "DATASET_UPDATED" | "DATASET_DELETED" | "MODEL_FAVORITED" | "ACCOUNT_UPDATED" | "PASSWORD_CHANGED" | "SUBSCRIPTION_ACTIVATED" | "PAYMENT_SUCCESS" | "INVOICE_PAID" | "SUBSCRIPTION_CREATED";
 
 interface SuccessState {
     type: SuccessType;

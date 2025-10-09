@@ -44,10 +44,12 @@ export interface ClientAccount extends AccountBase {
   web_site?: string;
   bio?: string;
   phone_number?: number;
+  company?: string;
   address?: string;
+  job_title?: string;
+
   linkedin?: string;
   github?: string;
-  models?: Model[];
   favoriteModels?: Model[];
 }
 

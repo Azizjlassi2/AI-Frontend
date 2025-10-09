@@ -215,6 +215,12 @@ export function DeveloperDashboardPage() {
                             <p className="text-red-700">Configure your Docker Hub integration to start sharing models , datasets and more with the comunity . You can set it up in your Settings ! </p>
                         </div>
                     )}
+                    {!developer_account?.phone_number && (
+                        <div className="mb-6 bg-red-50 border border-red-200 rounded-lg p-4 flex items-center">
+                            <AlertTriangle className="h-5 w-5 text-red-500 mr-3" />
+                            <p className="text-red-700">Configure your phone number so you can send / receive money . You can set it up in your Settings ! </p>
+                        </div>
+                    )}
                     <div className="mb-6 flex flex-col md:flex-row md:items-center md:justify-between">
                         <h1 className="text-2xl font-bold text-gray-900 mb-4 md:mb-0">
                             Tableau de bord développeur
