@@ -79,13 +79,19 @@ export function ModelsPage() {
 
   // Fetch tasks
   useEffect(() => {
-    axios
-      .get<PaginatedResponse<Task>>(`${import.meta.env.VITE_BACKEND_HOST}/api/v1/tasks`)
-      .then(res => {
-        const tasks = res.data.data.content;
-        setAllTasks(tasks);
-      })
-      .catch(console.error);
+    console.log("Fetching tasks...");
+    const res = axios.get<PaginatedResponse<Task>>(`${import.meta.env.VITE_BACKEND_HOST}/api/v1/tasks`);
+    console.log(res);
+    res.then(response => {
+      const responseData = response.data.data;
+      setAllTasks(responseData.content);
+    }).catch(error => {
+      setError({
+        message: error.response?.data?.message || "Une erreur est survenue lors du chargement des tâches.",
+        type: "NETWORK",
+      });
+    });
+
   }, []);
 
   // Fetch models with pagination and filters
@@ -113,6 +119,10 @@ export function ModelsPage() {
         setIsLoading(false);
       })
       .catch(error => {
+        setError({
+          message: error.response?.data?.message || "Une erreur est survenue lors du chargement des modèles.",
+          type: "NETWORK",
+        });
         setIsLoading(false);
       });
   }, [currentPage, itemsPerPage, selectedTasks, search]);
