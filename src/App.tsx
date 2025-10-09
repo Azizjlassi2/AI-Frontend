@@ -1,4 +1,4 @@
-import { Routes, Route, useLocation, BrowserRouter } from "react-router-dom";
+import { Routes, Route, useLocation, HashRouter as Router } from "react-router-dom";
 import { Navbar } from "./components/Navbar";
 import { Footer } from "./components/Footer";
 import { HomePage } from "./pages/base/HomePage";
@@ -117,9 +117,9 @@ function AppContent() {
           <Route path="/developer/payments" element={<DeveloperPaymentsPage />} />
           <Route path="/developer/subscribers" element={<DeveloperSubscribersPage />} />
 
-          <Route path="developer/models/add" element={<AddModelPage />} />
-          <Route path="developer/models/:id/update" element={<DeveloperUpdateModelPage />} />
-          <Route path="developer/models/:id" element={<DeveloperModelDetailPage />} />
+          <Route path="/developer/models/add" element={<AddModelPage />} />
+          <Route path="/developer/models/:id/update" element={<DeveloperUpdateModelPage />} />
+          <Route path="/developer/models/:id" element={<DeveloperModelDetailPage />} />
 
           <Route path="/subscriptions/new" element={<AddSubscriptionPlanPage />} />
 
@@ -158,7 +158,7 @@ function AppContent() {
 
 export function App() {
   return (
-    <BrowserRouter>
+    <Router>
       <AuthProvider>
         <SuccessProvider>
           <ErrorProvider>
@@ -168,6 +168,6 @@ export function App() {
           </ErrorProvider>
         </SuccessProvider>
       </AuthProvider>
-    </BrowserRouter>
+    </Router>
   );
 }
