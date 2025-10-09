@@ -79,24 +79,28 @@ export function ModelsPage() {
 
   // Fetch tasks
   useEffect(() => {
-    console.log("Fetching tasks...");
-    const res = axios.get<PaginatedResponse<Task>>(`${import.meta.env.VITE_BACKEND_HOST}/api/v1/tasks`);
-    console.log(res);
-    res.then(response => {
-      const responseData = response.data.data;
-      setAllTasks(responseData.content);
-    }).catch(error => {
-      setError({
-        message: error.response?.data?.message || "Une erreur est survenue lors du chargement des tâches.",
-        type: "NETWORK",
-      });
-    });
+    const fetchTasks = async () => {
+      try {
+        console.log("Fetching tasks...");
+        const response = await axios.get<PaginatedResponse<Task>>(`${import.meta.env.VITE_BACKEND_HOST}/api/v1/tasks`);
+        const responseData = response.data.data;
+        setAllTasks(responseData.content);
+      } catch (error: any) {
+        setError({
+          message: error.response?.data?.message || "Une erreur est survenue lors du chargement des tâches.",
+          type: "NETWORK",
+        });
+      }
+    };
+    fetchTasks();
+  }, [import.meta.env.VITE_BACKEND_HOST]);
 
-  }, []);
 
   // Fetch models with pagination and filters
   useEffect(() => {
     setIsLoading(true);
+
+    const controller = new AbortController();
 
     const params = {
       page: currentPage - 1, // Backend expects 0-indexed page
@@ -106,12 +110,20 @@ export function ModelsPage() {
     };
 
     axios
-      .get<PaginatedResponse<Model>>(`${import.meta.env.VITE_BACKEND_HOST}/api/v1/models`, { params })
+      .get<PaginatedResponse<Model>>(
+        `${import.meta.env.VITE_BACKEND_HOST}/api/v1/models`,
+        { params, signal: controller.signal }
+      )
       .then(res => {
         const response = res.data.data;
         setModels(response.content.map(model => ({
-          ...model,
+          id: model.id ?? 0,
+          name: model.name ?? "Modèle sans nom",
+          description: model.description ?? "",
+          developer: model.developer ?? { id: 0, username: "Inconnu" },
+          tasks: Array.isArray(model.tasks) ? model.tasks : [],
           stats: model.stats ?? { used: 0, stars: 0, discussions: 0 },
+          createdAt: model.createdAt ?? "",
         })));
 
         setTotalPages(response.totalPages);
@@ -119,13 +131,21 @@ export function ModelsPage() {
         setIsLoading(false);
       })
       .catch(error => {
+        if (axios.isCancel(error)) {
+          // Request was cancelled, do nothing
+          return;
+        }
         setError({
-          message: error.response?.data?.message || "Une erreur est survenue lors du chargement des modèles.",
+          message: error?.response?.data?.message || "Une erreur est survenue lors du chargement des modèles.",
           type: "NETWORK",
         });
         setIsLoading(false);
       });
-  }, [currentPage, itemsPerPage, selectedTasks, search]);
+    // Cleanup function to abort request if component unmounts or dependencies change
+    return () => {
+      controller.abort();
+    };
+  }, [currentPage, itemsPerPage, selectedTasks, search, setError]);
 
   // Reset to first page when filters change
   useEffect(() => {
