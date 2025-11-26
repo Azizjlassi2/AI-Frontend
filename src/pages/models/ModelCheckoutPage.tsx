@@ -76,8 +76,6 @@ export function ModelCheckoutPage() {
         // Get plan from location state if available
         const planFromState = location.state?.selectedPlan;
 
-        console.log('Plan from state:', planFromState);
-        console.log('Model from state:', modelFromState);
         // Fallback to mock data
         setSelectedPlan({
           id: planFromState?.id || 1,
@@ -136,15 +134,6 @@ export function ModelCheckoutPage() {
     if (!formData.email.trim() || !/\S+@\S+\.\S+/.test(formData.email)) {
       newErrors.email = 'Email invalide';
     }
-    if (!formData.address.trim()) {
-      newErrors.address = 'Adresse requise';
-    }
-    if (!formData.city.trim()) {
-      newErrors.city = 'Ville requise';
-    }
-    if (!formData.zipCode.trim()) {
-      newErrors.zipCode = 'Code postal requis';
-    }
     if (!formData.phone.trim()) {
       newErrors.phone = 'Téléphone requis';
     }
@@ -152,17 +141,29 @@ export function ModelCheckoutPage() {
     if (!agreeTerms) {
       newErrors.terms = 'Vous devez accepter les conditions';
     }
+    /*
+
+if (!formData.address.trim()) {
+  newErrors.address = 'Adresse requise';
+}
+if (!formData.city.trim()) {
+  newErrors.city = 'Ville requise';
+}
+if (!formData.zipCode.trim()) {
+  newErrors.zipCode = 'Code postal requis';
+}
+  */
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
   // Handle form submission
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    /*
+
     if (!validateForm()) {
       return;
     }
-      */
     setIsSubmitting(true);
     try {
       const response = await axios.post(`${import.meta.env.VITE_BACKEND_HOST}/api/v1/subscriptions/subscribe`, {
@@ -172,6 +173,13 @@ export function ModelCheckoutPage() {
         modelName: model?.name,
         clientId: account?.id,
         planName: selectedPlan?.name,
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        email: formData.email,
+        address: formData.address,
+        city: formData.city,
+        zipCode: formData.zipCode,
+        phone: formData.phone
 
       }, {
         headers: {
@@ -187,9 +195,10 @@ export function ModelCheckoutPage() {
         setSuccess({
           type: 'SUBSCRIPTION_CREATED',
           message: "Abonnement créé avec succès. Vous allez être redirigé vers la page de confirmation.",
-          redirect: response.data.data
+          redirect: response.data.data?.payUrl
         })
       }
+      setIsLoading(true);
 
 
 

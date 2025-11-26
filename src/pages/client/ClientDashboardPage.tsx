@@ -139,7 +139,7 @@ export function ClientDashboardPage() {
                     message: 'Vous avez utilisé 80% de votre quota mensuel pour ArabicBERT.',
                     date: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
                     read: false,
-                    link: `/usage/models/${subscriptions[0]?.modelId || 1}`
+                    link: `/client/models/${subscriptions[0]?.modelId || 1}/usage`
                 }, {
                     id: 2,
                     type: 'SUCCESS',
@@ -147,7 +147,7 @@ export function ClientDashboardPage() {
                     message: "Votre paiement pour l'abonnement à TunBERT a été traité avec succès.",
                     date: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000).toISOString(),
                     read: true,
-                    link: `/billing/invoices/INV-2024-0002`
+                    link: `/invoices/INV-2024-0002`
                 }, {
                     id: 3,
                     type: 'INFO',
@@ -163,7 +163,7 @@ export function ClientDashboardPage() {
                     message: 'Des erreurs ont été détectées dans vos appels API récents.',
                     date: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
                     read: false,
-                    link: `/usage/models/${subscriptions[0]?.modelId || 1}`
+                    link: `/client/models/${subscriptions[0]?.modelId || 1}/usage`
                 }];
                 // Create mock activity feed
                 const activity: ActivityItem[] = [{
@@ -226,7 +226,6 @@ export function ClientDashboardPage() {
                 };
                 setDashboardData(data);
             } catch (error) {
-                console.error('Error fetching dashboard data:', error);
                 setError('Une erreur est survenue lors du chargement des données du tableau de bord.');
             } finally {
                 setIsLoading(false);
@@ -292,7 +291,7 @@ export function ClientDashboardPage() {
                             abonné.
                         </p>
                         <div className="mt-4">
-                            <Link to="/user/api-keys" className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 inline-flex items-center">
+                            <Link to="/client/api-keys" className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 inline-flex items-center">
                                 Gérer mes clés API
                             </Link>
                         </div>
@@ -327,14 +326,14 @@ export function ClientDashboardPage() {
                             Consultez les statistiques d'utilisation de vos modèles
                         </p>
                         <div className="mt-4">
-                            {dashboardData.subscriptions.map(subscription => <Link key={subscription.id} to={`/usage/models/${subscription.modelId}`} className="block mb-2 text-blue-600 hover:underline">
+                            {dashboardData.subscriptions.map(subscription => <Link key={subscription.id} to={`/client/models/${subscription.modelId}/usage`} className="block mb-2 text-blue-600 hover:underline">
                                 Statistiques pour {subscription.modelName}
                             </Link>)}
                         </div>
                     </div>}
                     {activeTab === 'notifications' && <div className="bg-white rounded-xl shadow-sm p-6">
                         <h2 className="text-xl font-bold mb-6">Notifications</h2>
-                        <NotificationsWidget notifications={dashboardData.notifications} onMarkAsRead={markNotificationAsRead} expanded={true} />
+                        <NotificationsWidget notifications={dashboardData.notifications} onMarkAsRead={markNotificationAsRead} expanded={false} />
                     </div>}
                     {activeTab === 'settings' && <div className="bg-white rounded-xl shadow-sm p-6">
                         <h2 className="text-xl font-bold mb-6">Paramètres du compte</h2>
@@ -355,7 +354,7 @@ export function ClientDashboardPage() {
                         </h2>
                         <p className="text-gray-600 mb-4">Gérez vos datasets achetés</p>
                         <div className="mt-4">
-                            <button onClick={() => navigate('/user/datasets')} className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                            <button onClick={() => navigate('/client/datasets')} className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
                                 Voir tous mes datasets
                             </button>
                         </div>
@@ -365,3 +364,4 @@ export function ClientDashboardPage() {
         </div>
     </div>;
 }
+

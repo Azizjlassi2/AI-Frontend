@@ -41,16 +41,10 @@ export function UserDashboardSidebar({
       id: 'billing',
       label: 'Facturation',
       icon: <FileText className="h-5 w-5" />,
-      path: "/client/billing"
+      path: "/client/invoices"
 
     },
-    {
-      id: 'usage',
-      label: "Statistiques d'utilisation",
-      icon: <BarChart2 className="h-5 w-5" />,
-      path: "/client/usage"
 
-    },
     {
       id: 'notifications',
       label: 'Notifications',

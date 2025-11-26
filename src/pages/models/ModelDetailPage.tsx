@@ -164,9 +164,16 @@ export function ModelDetailPage() {
   const handleSelectPlan = (planId: number) => setSelectedPlan(planId)
 
   const handleSubscribe = () => {
+    if (!token) {
+      setError({
+        type: "AUTH",
+        message: "Vous devez être connecté pour continuer !",
+        redirect: "/login",
+      })
+      return
+    }
     const selectedPlanData = model.subscriptionPlans.find((plan: SubscriptionPlanDto) => plan.id === selectedPlan)
     if (selectedPlanData) {
-      console.log('Selected Plan Data:', selectedPlanData)
       navigate(`/models/checkout/${id}`, {
         state: { selectedPlan: selectedPlanData, model: model },
       })

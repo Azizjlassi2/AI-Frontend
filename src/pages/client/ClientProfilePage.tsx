@@ -332,7 +332,7 @@ export function ClientProfilePage() {
                                 <div className="p-6">
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                         <Link
-                                            to="/user/subscriptions"
+                                            to="/client/subscriptions"
                                             className="group p-4 border border-gray-200 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-colors"
                                         >
                                             <div className="flex items-center">
@@ -352,7 +352,7 @@ export function ClientProfilePage() {
                                         </Link>
 
                                         <Link
-                                            to="/user/api-keys"
+                                            to="/client/api-keys"
                                             className="group p-4 border border-gray-200 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-colors"
                                         >
                                             <div className="flex items-center">
@@ -372,7 +372,7 @@ export function ClientProfilePage() {
                                         </Link>
 
                                         <Link
-                                            to="/user/invoices"
+                                            to="/client/invoices"
                                             className="group p-4 border border-gray-200 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-colors"
                                         >
                                             <div className="flex items-center">
@@ -392,7 +392,7 @@ export function ClientProfilePage() {
                                         </Link>
 
                                         <Link
-                                            to="/user/settings"
+                                            to="/client/settings"
                                             className="group p-4 border border-gray-200 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-colors"
                                         >
                                             <div className="flex items-center">

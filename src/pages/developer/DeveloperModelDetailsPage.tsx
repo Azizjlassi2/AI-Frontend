@@ -26,15 +26,8 @@ import {
 } from 'lucide-react'
 import axios from 'axios'
 import { useError } from '../../context/ErrorContext'
-enum Visibility {
-    PUBLIC = 'PUBLIC',
-    PRIVATE = 'PRIVATE',
-}
-enum BillingPeriod {
-    MONTHLY = 'MONTHLY',
-    ANNUAL = 'ANNUAL',
-    PAY_AS_YOU_GO = 'PAY_AS_YOU_GO',
-}
+import { BillingPeriod, Visibility } from '../../types/shared'
+
 interface SubscriptionPlan {
     id: number
     name: string
@@ -44,7 +37,6 @@ interface SubscriptionPlan {
     billingPeriod: BillingPeriod
     features: string[]
     apiCallsLimit?: number
-    apiCallsPrice?: number
     subscribersCount: number
     revenue: number
 }
@@ -92,7 +84,7 @@ interface Model {
     name: string
     description: string
     visibility: Visibility
-    status: 'PUBLISHED' | 'DRAFT' | 'UNDER_REVIEW' | 'REJECTED'
+    status: string
     createdAt: string
     updatedAt: string
     publishedAt: string
@@ -739,15 +731,11 @@ export function DeveloperModelDetailPage() {
                                                                 </div>
                                                             </td>
                                                             <td className="px-6 py-4 whitespace-nowrap">
-                                                                {plan.billingPeriod === BillingPeriod.PAY_AS_YOU_GO ? (
-                                                                    <div className="text-sm text-gray-900">
-                                                                        {plan.apiCallsPrice} {plan.currency} / appel
-                                                                    </div>
-                                                                ) : (
+                                                                {
                                                                     <div className="text-sm text-gray-900">
                                                                         {formatCurrency(plan.price)}
                                                                     </div>
-                                                                )}
+                                                                }
                                                             </td>
                                                             <td className="px-6 py-4 whitespace-nowrap">
                                                                 <div className="text-sm text-gray-900">

@@ -1,7 +1,7 @@
-import React from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, Info, AlertTriangle, CheckCircle, AlertCircle, X } from 'lucide-react';
-import { Notification } from '../../pages/client/ClientDashboardPage';
+import { Notification } from '../../types/shared'
+
 interface NotificationsWidgetProps {
   notifications: Notification[];
   onMarkAsRead: (notificationId: number) => void;
@@ -52,11 +52,12 @@ export function NotificationsWidget({
   // Show all notifications if expanded, otherwise just show the unread ones or the first 3
   const displayNotifications = expanded ? notifications : notifications.filter(n => !n.read).slice(0, 3);
   const unreadCount = notifications.filter(n => !n.read).length;
+
   return <div className="bg-white rounded-xl shadow-sm overflow-hidden">
     <div className="p-6 border-b border-gray-200">
       <div className="flex justify-between items-center">
         <h2 className="text-lg font-semibold text-gray-900">Notifications</h2>
-        {!expanded && <Link to="/user/notifications" className="text-sm font-medium text-blue-600 hover:text-blue-800 flex items-center">
+        {!expanded && <Link to="/client/notifications" className="text-sm font-medium text-blue-600 hover:text-blue-800 flex items-center">
           Voir tout
           <ArrowRight className="h-4 w-4 ml-1" />
         </Link>}

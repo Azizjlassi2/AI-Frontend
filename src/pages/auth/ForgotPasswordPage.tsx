@@ -16,7 +16,12 @@ export function ForgotPasswordPage() {
         setLoading(true);
 
         try {
-            const response = await axios.post(`${import.meta.env.VITE_BACKEND_HOST}/api/v1/auth/forgot-password`, { email });
+            console.log(email)
+            const response = await axios.post(`${import.meta.env.VITE_BACKEND_HOST}/api/v1/auth/forgot-password`, email, {
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            });
 
             if (response.status === 200) {
                 navigate("/reset-password/send-link");
@@ -58,7 +63,6 @@ export function ForgotPasswordPage() {
                                 </div>
                                 <input
                                     type="email"
-                                    name="email"
                                     id="email"
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}

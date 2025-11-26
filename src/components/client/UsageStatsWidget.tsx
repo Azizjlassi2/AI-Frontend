@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, BarChart2, Calendar, ArrowUpRight, ArrowDownRight, Filter } from 'lucide-react';
-import { Subscription } from '../../pages/client/ClientDashboardPage';
+import { Subscription } from '../../types/shared';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } from 'recharts';
 interface UsageStatsWidgetProps {
   subscriptions: Subscription[];
@@ -111,10 +111,7 @@ export function UsageStatsWidget({
         <h2 className="text-lg font-semibold text-gray-900">
           Utilisation API
         </h2>
-        <Link to="/user/usage" className="text-sm font-medium text-blue-600 hover:text-blue-800 flex items-center">
-          Détails
-          <ArrowRight className="h-4 w-4 ml-1" />
-        </Link>
+
       </div>
     </div>
     <div className="p-6">
@@ -244,7 +241,7 @@ export function UsageStatsWidget({
           {subscriptions.filter(sub => sub.usageData).map(subscription => {
             // Calculate percentage of usage against limit
             const usagePercentage = subscription.usageData?.apiCallsLimit ? Math.min(100, subscription.usageData.apiCallsUsed / subscription.usageData.apiCallsLimit * 100) : 0;
-            return <Link key={subscription.id} to={`/usage/models/${subscription.modelId}`} className="block p-4 border border-gray-200 rounded-lg hover:bg-gray-50">
+            return <Link key={subscription.id} to={`/client/models/${subscription.modelId}/usage`} className="block p-4 border border-gray-200 rounded-lg hover:bg-gray-50">
               <div className="flex justify-between items-start mb-2">
                 <h4 className="font-medium text-gray-900">
                   {subscription.modelName}

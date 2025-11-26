@@ -1,7 +1,7 @@
 import React, { useState, Fragment } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, Download, FileText, Search, Filter, ChevronDown, ChevronUp } from 'lucide-react';
-import { Invoice } from '../../pages/client/ClientDashboardPage';
+import { Invoice } from '../../types/shared';
 interface RecentInvoicesWidgetProps {
   invoices: Invoice[];
 }
@@ -72,7 +72,7 @@ export function RecentInvoicesWidget({
         <h2 className="text-lg font-semibold text-gray-900">
           Factures récentes
         </h2>
-        <Link to="/user/invoices" className="text-sm font-medium text-blue-600 hover:text-blue-800 flex items-center">
+        <Link to="/client/invoices" className="text-sm font-medium text-blue-600 hover:text-blue-800 flex items-center">
           Voir tout
           <ArrowRight className="h-4 w-4 ml-1" />
         </Link>
@@ -173,7 +173,7 @@ export function RecentInvoicesWidget({
                     </div>
                     <div className="flex flex-col items-start justify-center">
                       <div className="flex gap-2 mb-2">
-                        <Link to={`/billing/invoices/${invoice.id}`} className="px-3 py-1 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700" onClick={e => e.stopPropagation()}>
+                        <Link to={`/client/invoices/${invoice.id}`} className="px-3 py-1 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700" onClick={e => e.stopPropagation()}>
                           Voir les détails
                         </Link>
                         <button className="px-3 py-1 text-sm border border-gray-300 rounded-md hover:bg-gray-100 flex items-center" onClick={e => {
@@ -184,12 +184,7 @@ export function RecentInvoicesWidget({
                           Télécharger
                         </button>
                       </div>
-                      {invoice.status === 'PENDING' && <button className="px-3 py-1 text-sm bg-green-600 text-white rounded-md hover:bg-green-700" onClick={e => {
-                        e.stopPropagation();
-                        alert(`Paiement de la facture ${invoice.id}`);
-                      }}>
-                        Payer maintenant
-                      </button>}
+
                     </div>
                   </div>
                 </td>

@@ -50,7 +50,7 @@ export function ActiveSubscriptionsWidget({
         <h2 className="text-lg font-semibold text-gray-900">
           Abonnements actifs
         </h2>
-        <Link to="/user/subscriptions" className="text-sm font-medium text-blue-600 hover:text-blue-800 flex items-center">
+        <Link to="/client/subscriptions" className="text-sm font-medium text-blue-600 hover:text-blue-800 flex items-center">
           Voir tout
           <ArrowRight className="h-4 w-4 ml-1" />
         </Link>
@@ -107,10 +107,10 @@ export function ActiveSubscriptionsWidget({
           </div>
         </div>}
         <div className="mt-4 flex space-x-4">
-          <Link to={`/usage/models/${subscription.modelId}`} className="text-sm text-blue-600 hover:text-blue-800">
+          <Link to={`/client/models/${subscription.modelId}/usage`} className="text-sm text-blue-600 hover:text-blue-800">
             Statistiques
           </Link>
-          <Link to={`/api/models/${subscription.modelId}`} className="text-sm text-blue-600 hover:text-blue-800">
+          <Link to={`/client/docs/models/${subscription.modelId}`} className="text-sm text-blue-600 hover:text-blue-800">
             Documentation API
           </Link>
         </div>

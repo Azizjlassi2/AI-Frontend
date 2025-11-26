@@ -90,38 +90,7 @@ export function DeveloperProfilePage() {
                         target: '',
                         date: ''
                     }]
-                /*
-                 [{
-                id: 1,
-                    type: 'model',
-                        action: 'Nouveau modèle publié',
-                            target: 'ArabicBERT v2.1.0',
-                                date: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString()
-            }, {
-                id: 2,
-                    type: 'subscriber',
-                        action: 'Nouvel abonné',
-                            target: "Société Tunisienne IA s'est abonné à ArabicBERT",
-                                date: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString()
-            }, {
-                id: 3,
-                    type: 'revenue',
-                        action: 'Paiement reçu',
-                            target: '499.99 TND pour abonnement à TunBERT',
-                                date: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString()
-            }, {
-                id: 4,
-                    type: 'dataset',
-                        action: 'Nouveau dataset publié',
-                            target: 'Medical Images 2024',
-                                date: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
-            }, {
-                id: 5,
-                    type: 'rating',
-                        action: 'Nouvelle évaluation',
-                            target: 'ArabicBERT a reçu une évaluation 5 étoiles',
-                                date: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString()
-            }]; */
+
                 setProfile(profile);
                 setRecentActivity(mockActivity);
             } catch (err) {

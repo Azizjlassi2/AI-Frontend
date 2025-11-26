@@ -19,7 +19,7 @@ export const ErrorModal = () => {
                 </div>
 
                 <h2 className="text-xl font-semibold text-gray-800 mb-2">
-                    Erreur
+                    {error.type}
                 </h2>
                 <p className="text-gray-600 mb-6">{error.message}</p>
 

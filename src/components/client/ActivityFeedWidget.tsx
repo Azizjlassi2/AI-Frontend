@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, Clock, Zap, CreditCard, RefreshCw, User } from 'lucide-react';
-import { ActivityItem } from '../../pages/client/ClientDashboardPage';
+import { ActivityItem } from '../../types/shared';
 interface ActivityFeedWidgetProps {
   activities: ActivityItem[];
 }
@@ -51,10 +51,7 @@ export function ActivityFeedWidget({
         <h2 className="text-lg font-semibold text-gray-900">
           Activité récente
         </h2>
-        <Link to="/user/activity" className="text-sm font-medium text-blue-600 hover:text-blue-800 flex items-center">
-          Voir tout
-          <ArrowRight className="h-4 w-4 ml-1" />
-        </Link>
+
       </div>
     </div>
     {activities.length === 0 ? <div className="p-6 text-center">

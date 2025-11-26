@@ -25,6 +25,11 @@ export enum SubscriptionStatus {
   PENDING = "PENDING",
 }
 
+export enum Visibility {
+  PUBLIC = "PUBLIC",
+  PRIVATE = "PRIVATE",
+}
+
 /**
  * Represents a user's subscription to a model.
  * Includes details about the model, plan, billing, and usage.
@@ -152,6 +157,124 @@ export interface ApiKey {
   modelName: string;
   planName: string;
   created: string;
-  lastUsed: string | null;
-  status: "active" | "revoked";
+  status: "active" | "inactive";
+}
+
+/**
+ *
+ */
+export enum PaymentErrorType {
+  CARD_DECLINED = "CARD_DECLINED",
+  INSUFFICIENT_FUNDS = "INSUFFICIENT_FUNDS",
+  EXPIRED_CARD = "EXPIRED_CARD",
+  INCORRECT_CVC = "INCORRECT_CVC",
+  INCORRECT_ZIP = "INCORRECT_ZIP",
+  PROCESSING_ERROR = "PROCESSING_ERROR",
+  NETWORK_ERROR = "NETWORK_ERROR",
+  AUTHENTICATION_REQUIRED = "AUTHENTICATION_REQUIRED",
+  GENERIC_ERROR = "GENERIC_ERROR",
+}
+/**
+ *
+ */
+export interface PaymentErrorInfo {
+  type: PaymentErrorType;
+  title: string;
+  message: string;
+  suggestion: string;
+  actionLabel: string;
+  actionPath: string;
+}
+/**
+ *
+ */
+export interface SubscriptionDTO {
+  id: number;
+
+  // Client info
+  clientId: number;
+  clientWebsite: string;
+  clientBio: string;
+  clientAddress: string;
+  clientCompany?: string | null;
+
+  // Plan info
+  planId: number;
+  planName: string;
+  planDescription: string;
+  planPrice: number;
+  planCurrency: string;
+  billingPeriod: BillingPeriod;
+  apiCallsLimit: number;
+
+  // Model info
+  modelId: number;
+  modelName: string;
+  modelDescription: string;
+  modelCreatedAt: string;
+
+  // Payment info
+  paymentId: number;
+  paymentTransactionId: string;
+  paymentOrderId: string;
+  paymentAmount: number;
+  paymentCurrency: string;
+
+  // Subscription info
+  startDate: string;
+  nextBillingDate: string | null;
+  status: string;
+  recurring: boolean;
+
+  // Response metadata
+  message: string;
+  metadata: any | null;
+  success: boolean;
+  timestamp: string;
+}
+/**
+ * ModelAPIDocPage
+ */
+export enum HttpMethod {
+  GET = "GET",
+  POST = "POST",
+  PUT = "PUT",
+  DELETE = "DELETE",
+}
+/**
+ * ModelAPIDocPage
+ */
+export interface ApiEndpoint {
+  id: string;
+  method: HttpMethod;
+  path: string;
+  description: string;
+  authentication: boolean;
+  requestBody?: string;
+  responseBody: string;
+  errorResponse: string;
+  rateLimit: string;
+  parameters?: {
+    name: string;
+    type: string;
+    required: boolean;
+    description: string;
+  }[];
+}
+
+/**
+ * ModelAPIDocPage
+ */
+export interface ModelApiDoc {
+  id: number;
+  name: string;
+  version: string;
+  baseUrl: string;
+  description: string;
+  authType: "API_KEY" | "OAUTH2" | "BEARER_TOKEN";
+  endpoints: ApiEndpoint[];
+  sdkExamples: {
+    language: string;
+    code: string;
+  }[];
 }

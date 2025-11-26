@@ -4,8 +4,10 @@ import { Key, Copy, RefreshCw, Eye, EyeOff, AlertCircle, Shield, Clock, CheckCir
 import { BillingPeriod, Subscription, SubscriptionStatus, ApiKey } from '../../types/shared';
 import { UserDashboardSidebar } from '../../components/client/UserDashboardSidebar';
 import { UserDashboardHeader } from '../../components/client/UserDashboardHeader';
+import axios from 'axios';
+import { useAuth } from '../../context/AuthContext';
 
-export function ApiKeysManagementPage() {
+export function ClientApiKeysManagementPage() {
     const [apiKeys, setApiKeys] = useState<ApiKey[]>([]);
     const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -18,32 +20,39 @@ export function ApiKeysManagementPage() {
         setActiveTab(tab);
     };
 
+    const { token } = useAuth();
+
     useEffect(() => {
         const fetchData = async () => {
             setIsLoading(true);
             try {
                 // In a real app, fetch from an API
-                await new Promise(resolve => setTimeout(resolve, 800));
-                // Get subscriptions from localStorage
-                const storedSubscriptions = JSON.parse(localStorage.getItem('userSubscriptions') || '[]');
-                setSubscriptions(storedSubscriptions);
+                const response = await axios.get(`${import.meta.env.VITE_BACKEND_HOST}/api/v1/client/api-keys`, {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                        "Content-Type": "application/json",
+                    },
+                    withCredentials: true,
+                });
+                const data = response.data.data;
+                console.log(data)
+
+
+
                 // Generate mock API keys based on subscriptions
-                const mockApiKeys: ApiKey[] = storedSubscriptions.map((sub: Subscription) => {
+                const mockApiKeys: ApiKey[] = data.map((key: any) => {
                     // Generate a random API key
-                    const randomKey = `ai_${Array.from({
-                        length: 32
-                    }, () => '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'[Math.floor(Math.random() * 62)]).join('')}`;
+
                     return {
-                        id: `key_${sub.id}`,
-                        name: `${sub.modelName} API Key`,
-                        key: randomKey,
-                        subscriptionId: sub.id,
-                        modelId: sub.modelId,
-                        modelName: sub.modelName,
-                        planName: sub.planName,
-                        created: sub.startDate,
-                        lastUsed: sub.usageData?.lastUsed || null,
-                        status: sub.status === SubscriptionStatus.ACTIVE ? 'active' : 'revoked'
+                        id: `key_${key.id}`,
+                        name: `${key?.subscription?.plan?.model?.name} API Key`,
+                        key: key.key,
+                        subscriptionId: key?.subscription.id,
+                        modelId: key?.subscription?.plan?.model?.id,
+                        modelName: key?.subscription?.plan?.model?.name,
+                        planName: key?.subscription?.plan?.name,
+                        created: key.createdAt,
+                        status: key?.subscription?.status === SubscriptionStatus.ACTIVE ? 'active' : SubscriptionStatus.PENDING ? 'inactive' : 'revoked'
                     };
                 });
                 setApiKeys(mockApiKeys);
@@ -237,7 +246,7 @@ export function ApiKeysManagementPage() {
                                             <div>
                                                 <span className="text-gray-500">Statut:</span>{' '}
                                                 <span className={`font-medium ${apiKey.status === 'active' ? 'text-green-600' : 'text-red-600'}`}>
-                                                    {apiKey.status === 'active' ? 'Actif' : 'Révoqué'}
+                                                    {apiKey.status === 'active' ? 'Actif' : apiKey.status === 'inactive' ? 'Inactive' : 'Révoqué'}
                                                 </span>
                                             </div>
                                         </div>
@@ -250,24 +259,14 @@ export function ApiKeysManagementPage() {
                                                 </span>
                                             </div>
                                         </div>
-                                        <div className="flex items-center">
-                                            <Clock className="h-4 w-4 text-gray-500 mr-2" />
-                                            <div>
-                                                <span className="text-gray-500">
-                                                    Dernière utilisation:
-                                                </span>{' '}
-                                                <span className="font-medium">
-                                                    {formatRelativeTime(apiKey.lastUsed)}
-                                                </span>
-                                            </div>
-                                        </div>
+
                                     </div>
                                     <div className="mt-4 pt-4 border-t border-gray-200">
                                         <div className="flex flex-wrap gap-3">
-                                            <Link to={`/api/models/${apiKey.modelId}`} className="px-3 py-1.5 text-sm text-blue-600 bg-blue-50 rounded-md hover:bg-blue-100 flex items-center">
+                                            <Link to={`/client/docs/models/${apiKey.modelId}`} className="px-3 py-1.5 text-sm text-blue-600 bg-blue-50 rounded-md hover:bg-blue-100 flex items-center">
                                                 Documentation API
                                             </Link>
-                                            <Link to={`/usage/models/${apiKey.modelId}`} className="px-3 py-1.5 text-sm text-blue-600 bg-blue-50 rounded-md hover:bg-blue-100 flex items-center">
+                                            <Link to={`/client/models/${apiKey.modelId}/usage`} className="px-3 py-1.5 text-sm text-blue-600 bg-blue-50 rounded-md hover:bg-blue-100 flex items-center">
                                                 Statistiques d'utilisation
                                             </Link>
                                         </div>

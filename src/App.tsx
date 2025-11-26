@@ -62,9 +62,22 @@ import { SuccessModal } from "./Modal/SuccessModal";
 import { DeveloperUpdateModelPage } from "./pages/developer/DeveloperUpdateModelPage";
 import { DeveloperModelDetailPage } from "./pages/developer/DeveloperModelDetailsPage";
 
+import { ClientApiKeysManagementPage } from "./pages/client/ClientApiKeysManagementPage";
 
 import { ClientSubscriptionsPage } from "./pages/client/ClientSubscriptionsPage";
 import { ClientModelUsageStatsPage } from "./pages/client/ClientModelUsageStatsPage";
+import { ModelPaymentConfirmationPage } from "./pages/models/ModelPaymentConfirmationPage";
+import { ModelPaymentErrorPage } from "./pages/models/ModelPaymentErrorPage";
+import { ModelAPIDocPage } from "./pages/models/ModelAPIDocPage";
+import { ClientDatasetsPage } from "./pages/client/ClientDatasetsPage";
+
+import { ClientInvoicesPage } from "./pages/client/ClientInvoicesPage";
+import { ClientInvoiceDetailPage } from "./pages/client/ClientInvoiceDetailPage";
+
+import { FAQSubscriptionsPage } from "./pages/models/FAQSubscriptionsPage";
+import { ClientSubscriptionSettingsPage } from "./components/client/ClientSubscriptionSettingsPage";
+import { InstanceDetailPage } from "./pages/models/InstanceDetailPage";
+import { ClientNotificationsPage } from "./components/client/ClientNotificationsPage";
 
 
 function AppContent() {
@@ -72,6 +85,7 @@ function AppContent() {
   const isAdminRoute = location.pathname.startsWith("/admin");
   const isDevelopeRoute = location.pathname.startsWith("/developer");
   const isClientRoute = location.pathname.startsWith("/client");
+
 
   return (
     <div className="flex flex-col min-h-screen w-full bg-white">
@@ -128,9 +142,23 @@ function AppContent() {
           <Route path="/client/settings" element={<ClientSettingsPage />} />
           <Route path="/client/profile" element={<ClientProfilePage />} />
           <Route path="/client/subscriptions" element={<ClientSubscriptionsPage />} />
+          <Route path="/client/subscriptions/:subscriptionId/settings" element={<ClientSubscriptionSettingsPage />} />
+          <Route path="/client/payment-confirmation" element={<ModelPaymentConfirmationPage />} />
+          <Route path="/client/payment-error/" element={<ModelPaymentErrorPage />} />
+          <Route path="/client/api-keys" element={<ClientApiKeysManagementPage />} />
+          <Route path="/client/datasets" element={<ClientDatasetsPage />} />
+          <Route path="/client/notifications" element={<ClientNotificationsPage />} />
+          <Route path="/client/invoices" element={<ClientInvoicesPage />} />
+          <Route path="/client/invoices/:invoiceId" element={<ClientInvoiceDetailPage />} />
+          <Route path="/client/instances/:instanceId" element={<InstanceDetailPage />} />
+
+
+
+          <Route path="/client/docs/models/:modelId" element={<ModelAPIDocPage />} />
           <Route path="/client/models/:modelId/usage" element={<ClientModelUsageStatsPage />} />
 
-
+          {/* FAQ */}
+          <Route path="/faq/subscriptions" element={<FAQSubscriptionsPage />} />
 
 
           {/* Error Routes */}

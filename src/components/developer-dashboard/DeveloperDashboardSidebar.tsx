@@ -44,16 +44,6 @@ export function DeveloperDashboardSidebar({
     icon: <DollarSign className="h-5 w-5" />,
     path: '/developer/payments'
   }, {
-    id: 'documentation',
-    label: 'Documentation',
-    icon: <FileText className="h-5 w-5" />,
-    path: '/developer/documentation'
-  }, {
-    id: 'support',
-    label: 'Support',
-    icon: <MessageSquare className="h-5 w-5" />,
-    path: '/developer/support'
-  }, {
     id: 'settings',
     label: 'Paramètres',
     icon: <Settings className="h-5 w-5" />,

@@ -35,8 +35,9 @@ export const SuccessModal: React.FC = () => {
                             onClick={() => {
                                 clearSuccess();
                                 // check if the redirect link is external link and not internal link
-                                if (success.redirect!.startsWith("http")) {
-                                    window.location.href = success.redirect!;
+                                if (success.redirect?.startsWith("https://") || success.redirect?.startsWith("http://")) {
+                                    // open the link in new tab
+                                    window.open(success.redirect, "_blank");
                                     return;
                                 } else {
                                     navigate(success.redirect!);
