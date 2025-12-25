@@ -5,6 +5,8 @@ import axios from 'axios';
 import { BillingPeriod } from '../../types/shared';
 import { useAuth } from '../../context/AuthContext';
 import { useSuccess } from '../../context/SuccessContext';
+import { a, em } from 'framer-motion/client';
+import { ClientAccount } from '../../types/auth';
 
 // Interface for subscription plans
 interface SubscriptionPlanDto {
@@ -28,6 +30,7 @@ interface Model {
 // Define payment method types
 enum PaymentMethod {
   KONNECT = 'KONNECT',
+  PAYMEE = 'PAYMEE',
 }
 export function ModelCheckoutPage() {
   const navigate = useNavigate();
@@ -39,7 +42,9 @@ export function ModelCheckoutPage() {
   const [selectedPlan, setSelectedPlan] = useState<SubscriptionPlanDto | null>(null);
   const [model, setModel] = useState<Model | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const { username, token, account } = useAuth();
+  const { username, email, token, account } = useAuth();
+
+  const ClientAccount = account as ClientAccount;
   // Form state
   const [formData, setFormData] = useState({
     cardName: '',
@@ -48,12 +53,12 @@ export function ModelCheckoutPage() {
     cvv: '',
     firstName: '',
     lastName: '',
-    email: '',
+    email: email || '',
     address: '',
     city: '',
     zipCode: '',
     country: 'Tunisie',
-    phone: ''
+    phone: ClientAccount?.phone_number as unknown as string || '',
   });
   // Payment method state
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<PaymentMethod>(PaymentMethod.KONNECT);
@@ -109,10 +114,26 @@ export function ModelCheckoutPage() {
       name,
       value
     } = e.target;
-    setFormData({
-      ...formData,
-      [name]: value
-    });
+
+    if (name === 'phone') {
+      // Format Tunisian phone XX XXX XXX
+      const numericValue = value.replace(/\D/g, '');
+      let formatted = '';
+      if (numericValue.length <= 2) {
+        formatted = numericValue;
+      } else if (numericValue.length <= 5) {
+        formatted = numericValue.slice(0, 2) + ' ' + numericValue.slice(2);
+      } else {
+        formatted = numericValue.slice(0, 2) + ' ' + numericValue.slice(2, 5) + ' ' + numericValue.slice(5, 8);
+      }
+      setFormData({ ...formData, phone: formatted });
+    } else if (name === 'zipCode') {
+      // Autoriser uniquement 4 chiffres max
+      const numericValue = value.replace(/\D/g, '').slice(0, 4);
+      setFormData({ ...formData, zipCode: numericValue });
+    } else {
+      setFormData({ ...formData, [name]: value });
+    }
     // Clear error when user types
     if (errors[name]) {
       setErrors({
@@ -134,15 +155,19 @@ export function ModelCheckoutPage() {
     if (!formData.email.trim() || !/\S+@\S+\.\S+/.test(formData.email)) {
       newErrors.email = 'Email invalide';
     }
-    if (!formData.phone.trim()) {
-      newErrors.phone = 'Téléphone requis';
+    // le format du numéro de téléphone tunisien 
+    if (!formData.phone.trim() || !/^\d{2} \d{3} \d{3}$/.test(formData.phone)) {
+      newErrors.phone = 'Téléphone invalide (format attendu: XX XXX XXX)';
     }
 
+    if (!formData.zipCode.trim() || !/^\d{4}$/.test(formData.zipCode)) {
+      newErrors.zipCode = 'Code postal invalide (4 chiffres requis)';
+    }
     if (!agreeTerms) {
       newErrors.terms = 'Vous devez accepter les conditions';
     }
     /*
-
+ 
 if (!formData.address.trim()) {
   newErrors.address = 'Adresse requise';
 }
@@ -179,7 +204,7 @@ if (!formData.zipCode.trim()) {
         address: formData.address,
         city: formData.city,
         zipCode: formData.zipCode,
-        phone: formData.phone
+        phoneNumber: formData.phone
 
       }, {
         headers: {
@@ -187,7 +212,16 @@ if (!formData.zipCode.trim()) {
         },
         withCredentials: true,
       });
-      console.log('Subscription response:', response.data);
+      console.log('Subscription response:', response.data.data);
+      console.log('Subscription response:', response);
+
+      let payUrl;
+      if (selectedPaymentMethod === PaymentMethod.KONNECT) {
+        payUrl = response.data.data?.payUrl
+      } else if (selectedPaymentMethod === PaymentMethod.PAYMEE) {
+        payUrl = response.data.data.data.payment_url
+
+      }
 
       // Show success message and redirect to confirmation page
       //setPaymentSuccess(true);
@@ -195,7 +229,7 @@ if (!formData.zipCode.trim()) {
         setSuccess({
           type: 'SUBSCRIPTION_CREATED',
           message: "Abonnement créé avec succès. Vous allez être redirigé vers la page de confirmation.",
-          redirect: response.data.data?.payUrl
+          redirect: payUrl
         })
       }
       setIsLoading(true);
@@ -255,8 +289,7 @@ if (!formData.zipCode.trim()) {
         return <Calendar className="h-5 w-5 text-blue-600" />;
       case BillingPeriod.ANNUAL:
         return <Calendar className="h-5 w-5 text-green-600" />;
-      case BillingPeriod.WEEKLY:
-        return <Zap className="h-5 w-5 text-purple-600" />;
+
       default:
         return <CreditCard className="h-5 w-5 text-blue-600" />;
     }
@@ -268,8 +301,7 @@ if (!formData.zipCode.trim()) {
         return 'Mensuel';
       case BillingPeriod.ANNUAL:
         return 'Annuel';
-      case BillingPeriod.WEEKLY:
-        return 'Hebdomadaire';
+
       default:
         return '';
     }
@@ -335,12 +367,7 @@ if (!formData.zipCode.trim()) {
               </div>
               <div className="text-right">
                 <div className="text-xl font-bold text-gray-900">
-                  {selectedPlan.billingPeriod === BillingPeriod.WEEKLY ? <>
-                    {selectedPlan.apiCallsPrice} {selectedPlan.currency}
-                    <span className="text-sm font-normal text-gray-600">
-                      /appel
-                    </span>
-                  </> : <>
+                  {<>
                     {selectedPlan.price} {selectedPlan.currency}
                     <span className="text-sm font-normal text-gray-600">
                       /
@@ -348,7 +375,7 @@ if (!formData.zipCode.trim()) {
                     </span>
                   </>}
                 </div>
-                {selectedPlan.billingPeriod !== BillingPeriod.WEEKLY && selectedPlan.apiCallsLimit && <p className="text-sm text-gray-600 mt-1">
+                {selectedPlan.apiCallsLimit && <p className="text-sm text-gray-600 mt-1">
                   {selectedPlan.apiCallsLimit.toLocaleString()} appels API
                   inclus
                 </p>}
@@ -375,14 +402,14 @@ if (!formData.zipCode.trim()) {
             </h2>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {/* Payment Method Options */}
-              {/*
-              <div className={`border rounded-lg p-4 cursor-pointer hover:bg-gray-50 transition-colors ${selectedPaymentMethod === PaymentMethod.FLOUCI ? 'border-blue-500 bg-blue-50' : 'border-gray-200'}`} onClick={() => handlePaymentMethodChange(PaymentMethod.FLOUCI)}>
+
+              <div className={`border rounded-lg p-4 cursor-pointer hover:bg-gray-50 transition-colors ${selectedPaymentMethod === PaymentMethod.PAYMEE ? 'border-blue-500 bg-blue-50' : 'border-gray-200'}`} onClick={() => handlePaymentMethodChange(PaymentMethod.PAYMEE)}>
                 <div className="flex justify-center mb-3">
-                  <img src="https://cdn.brandfetch.io/idZWBxd8fZ/w/1843/h/500/theme/dark/logo.png?c=1bxid64Mup7aczewSAYMX&t=1748973745923" alt="Flouci" className="h-8" />
+                  <img src="https://www.paymee.tn/wp-content/uploads/2022/02/Plan-de-travail-2.png" alt="Paymee" className="h-8" />
                 </div>
-                <p className="text-center text-sm font-medium">Flouci</p>
+                <p className="text-center text-sm font-medium">Paymee</p>
               </div>
-              */}
+
               <div className={`border rounded-lg p-4 cursor-pointer hover:bg-gray-50 transition-colors ${selectedPaymentMethod === PaymentMethod.KONNECT ? 'border-blue-500 bg-blue-50' : 'border-gray-200'}`} onClick={() => handlePaymentMethodChange(PaymentMethod.KONNECT)}>
                 <div className="flex justify-center mb-3">
                   <img src="https://s3.eu-west-3.amazonaws.com/konnect.network.public/logo_konnect_23a791d66b.svg" alt="Konnect" className="h-8" />
@@ -401,6 +428,7 @@ if (!formData.zipCode.trim()) {
 
                     {/* {selectedPaymentMethod === PaymentMethod.FLOUCI && 'Flouci est une solution de paiement électronique tunisienne. Vous serez redirigé vers leur plateforme.'} */}
                     {selectedPaymentMethod === PaymentMethod.KONNECT && 'Konnect est un service de paiement mobile de la Banque Internationale Arabe de Tunisie (BIAT).'}
+                    {selectedPaymentMethod === PaymentMethod.PAYMEE && 'Paymee est une solution de paiement en ligne tunisienne sécurisée.'}
                   </p>
                 </div>
               </div>
@@ -482,7 +510,7 @@ if (!formData.zipCode.trim()) {
                   </label>
                   <div className={`flex items-center w-full px-4 py-2 border ${errors.phone ? 'border-red-500' : 'border-gray-300'} rounded-lg focus-within:ring-blue-500 focus-within:border-blue-500`}>
                     <Phone className="h-4 w-4 text-gray-400 mr-2" />
-                    <input type="tel" id="phone" name="phone" value={formData.phone} onChange={handleInputChange} className="flex-grow focus:outline-none" placeholder="+216 00 000 000" />
+                    <input type="tel" id="phone" name="phone" value={formData.phone} onChange={handleInputChange} className="flex-grow focus:outline-none" placeholder="00 000 000" />
                   </div>
                   {errors.phone && <p className="mt-1 text-sm text-red-600">
                     {errors.phone}

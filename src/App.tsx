@@ -1,4 +1,4 @@
-import { Routes, Route, useLocation, HashRouter as Router } from "react-router-dom";
+import { Routes, Route, useLocation, BrowserRouter as Router } from "react-router-dom";
 import { Navbar } from "./components/Navbar";
 import { Footer } from "./components/Footer";
 import { HomePage } from "./pages/base/HomePage";
@@ -78,6 +78,13 @@ import { FAQSubscriptionsPage } from "./pages/models/FAQSubscriptionsPage";
 import { ClientSubscriptionSettingsPage } from "./components/client/ClientSubscriptionSettingsPage";
 import { InstanceDetailPage } from "./pages/models/InstanceDetailPage";
 import { ClientNotificationsPage } from "./components/client/ClientNotificationsPage";
+import { DocsPage } from "./pages/base/DocsPage";
+import { DeveloperAddPaymentMethodPage } from "./pages/developer/DeveloperAddPaymentMethodPage";
+import { DeveloperDatasetDetailPage } from "./pages/developer/DeveloperDatasetDetailPage";
+import { DeveloperPayoutDetailPage } from "./pages/developer/DeveloperPayoutDetailPage";
+import { DatasetCheckoutPage } from "./pages/datasets/DatasetCheckoutPage";
+import { DatasetPaymentConfirmationPage } from "./pages/datasets/DatasetPaymentConfirmationPage";
+
 
 
 function AppContent() {
@@ -85,11 +92,12 @@ function AppContent() {
   const isAdminRoute = location.pathname.startsWith("/admin");
   const isDevelopeRoute = location.pathname.startsWith("/developer");
   const isClientRoute = location.pathname.startsWith("/client");
+  const isAuthRoute = location.pathname.startsWith("/login") || location.pathname.startsWith("/register") || location.pathname.startsWith("/forgot-password") || location.pathname.startsWith("/reset-password");
 
 
   return (
     <div className="flex flex-col min-h-screen w-full bg-white">
-      {!isAdminRoute && !isDevelopeRoute && !isClientRoute && <Navbar />}
+      {!isAdminRoute && !isDevelopeRoute && !isClientRoute && !isAuthRoute && <Navbar />}
       <main className="flex-grow">
         <Routes>
 
@@ -104,9 +112,13 @@ function AppContent() {
 
           <Route path="/datasets" element={<DatasetsPage />} />
           <Route path="/datasets/:id" element={<DatasetDetailPage />} />
-          <Route path="/datasets/add" element={<AddDatasetPage />} />
+          <Route path="/datasets/checkout/:id" element={<DatasetCheckoutPage />} />
+          <Route path="/dataset-payment-confirmation/:datasetId" element={<DatasetPaymentConfirmationPage />} />
 
-          <Route path="/docs" element={<UnderMaintenancePage />} />
+          <Route path="/developer/datasets/add" element={<AddDatasetPage />} />
+          <Route path="/developer/datasets/:id" element={<DeveloperDatasetDetailPage />} />
+
+          <Route path="/docs" element={<DocsPage />} />
 
           {/* Auth Routes */}
           <Route path="/login" element={<LoginPage />} />
@@ -129,6 +141,8 @@ function AppContent() {
           <Route path="/developer/analytics" element={<DeveloperAnalyticsPage />} />
           <Route path="/developer/reviews" element={<DeveloperReviewsPage />} />
           <Route path="/developer/payments" element={<DeveloperPaymentsPage />} />
+          <Route path="/developer/payouts/:payoutId" element={<DeveloperPayoutDetailPage />} />
+          <Route path="/developer/add-payment-method" element={<DeveloperAddPaymentMethodPage />} />
           <Route path="/developer/subscribers" element={<DeveloperSubscribersPage />} />
 
           <Route path="/developer/models/add" element={<AddModelPage />} />
@@ -188,6 +202,7 @@ export function App() {
   return (
     <Router>
       <AuthProvider>
+
         <SuccessProvider>
           <ErrorProvider>
             <SuccessModal />
@@ -195,6 +210,7 @@ export function App() {
             <AppContent />
           </ErrorProvider>
         </SuccessProvider>
+
       </AuthProvider>
     </Router>
   );

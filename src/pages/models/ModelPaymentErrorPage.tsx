@@ -6,6 +6,7 @@ export function ModelPaymentErrorPage() {
     const location = useLocation();
     const navigate = useNavigate();
     const [errorInfo, setErrorInfo] = useState<PaymentErrorInfo | null>(null);
+
     useEffect(() => {
         const errorType = location.state?.errorType || PaymentErrorType.GENERIC_ERROR;
         // Get detailed information based on error type

@@ -7,8 +7,11 @@
 export enum BillingPeriod {
   MONTHLY = "MONTHLY",
   ANNUAL = "ANNUAL",
-  WEEKLY = "WEEKLY",
-  PAY_AS_YOU_GO = "PAY_AS_YOU_GO",
+}
+
+export interface Task {
+  id: number;
+  name: string;
 }
 
 /**
@@ -277,4 +280,96 @@ export interface ModelApiDoc {
     language: string;
     code: string;
   }[];
+}
+
+// Define types for discriminated union
+export type PaymentMethodType = "bank_transfer" | "d17_card" | "postal_check";
+
+export interface BasePaymentMethod {
+  id: string;
+  type: PaymentMethodType;
+  isDefault: boolean;
+}
+
+export interface BankTransferDetails {
+  bankName: string;
+  accountNumber: string;
+}
+
+export interface D17CardDetails {
+  cardNumber: string;
+}
+
+export interface PostalCheckDetails {
+  ccpNumber: string;
+}
+
+export interface BankTransferMethod extends BasePaymentMethod {
+  type: "bank_transfer";
+  details: BankTransferDetails;
+}
+
+export interface D17CardMethod extends BasePaymentMethod {
+  type: "d17_card";
+  details: D17CardDetails;
+}
+
+export interface PostalCheckMethod extends BasePaymentMethod {
+  type: "postal_check";
+  details: PostalCheckDetails;
+}
+
+export type PaymentMethod =
+  | BankTransferMethod
+  | D17CardMethod
+  | PostalCheckMethod;
+
+export interface BankTransferData {
+  accountHolderName: string;
+  bankName: string;
+  iban: string;
+  rib: string;
+  accountNumber: string;
+  address: string;
+  city: string;
+  postalCode: string;
+}
+
+export interface D17CardData {
+  cardHolderName: string;
+  cardNumber: string;
+  expiryDate: string;
+  phoneNumber: string;
+}
+
+export interface PostalCheckData {
+  accountHolderName: string;
+  ccpNumber: string;
+  phoneNumber: string;
+  address: string;
+  city: string;
+  postalCode: string;
+}
+export const TUNISIAN_BANKS = [
+  "Banque Nationale Agricole (BNA)",
+  "Société Tunisienne de Banque (STB)",
+  "Banque Internationale Arabe de Tunisie (BIAT)",
+  "Attijari Bank",
+  "Union Internationale de Banques (UIB)",
+  "Banque de l'Habitat (BH)",
+  "Amen Bank",
+  "Banque de Tunisie (BT)",
+  "Arab Tunisian Bank (ATB)",
+  "Banque Tuniso-Koweitienne (BTK)",
+];
+
+export enum PaymentStatus {
+  PAID = "PAID",
+  PENDING = "PENDING",
+  FAILED = "FAILED",
+}
+export enum PaymentType {
+  MODEL_SUBSCRIPTION = "MODEL_SUBSCRIPTION",
+  DATASET_PURCHASE = "DATASET_PURCHASE",
+  API_USAGE = "API_USAGE",
 }

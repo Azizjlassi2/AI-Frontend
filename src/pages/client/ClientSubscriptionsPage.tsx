@@ -70,8 +70,7 @@ export function ClientSubscriptionsPage() {
                 return <Calendar className="h-5 w-5 text-blue-600" />;
             case BillingPeriod.ANNUAL:
                 return <Calendar className="h-5 w-5 text-green-600" />;
-            case BillingPeriod.PAY_AS_YOU_GO:
-                return <Zap className="h-5 w-5 text-purple-600" />;
+
             default:
                 return <CreditCard className="h-5 w-5 text-blue-600" />;
         }
@@ -83,8 +82,7 @@ export function ClientSubscriptionsPage() {
                 return 'Mensuel';
             case BillingPeriod.ANNUAL:
                 return 'Annuel';
-            case BillingPeriod.PAY_AS_YOU_GO:
-                return 'Pay-as-you-use';
+
             default:
                 return '';
         }
@@ -415,24 +413,10 @@ export function ClientSubscriptionsPage() {
                                                                     </span>{' '}
                                                                     {formatDate(subscription.startDate)}
                                                                 </p>
-                                                                {subscription.billingPeriod !==
-                                                                    BillingPeriod.PAY_AS_YOU_GO && (
-                                                                        <p className="text-sm text-gray-700">
-                                                                            <span className="font-medium">
-                                                                                Prochain paiement:
-                                                                            </span>{' '}
-                                                                            {subscription.status ===
-                                                                                SubscriptionStatus.EXPIRED
-                                                                                ? 'Abonnement expiré'
-                                                                                : formatDate(subscription.nextBillingDate)}
-                                                                        </p>
-                                                                    )}
+
                                                                 <p className="text-sm text-gray-700">
                                                                     <span className="font-medium">Prix:</span>{' '}
-                                                                    {subscription.billingPeriod ===
-                                                                        BillingPeriod.PAY_AS_YOU_GO
-                                                                        ? `${subscription.price} ${subscription.currency}/appel`
-                                                                        : `${formatCurrency(subscription.price, subscription.currency)}/${subscription.billingPeriod === BillingPeriod.MONTHLY ? 'mois' : 'an'}`}
+                                                                    {` ${formatCurrency(subscription.price, subscription.currency)}/${subscription.billingPeriod === BillingPeriod.MONTHLY ? 'mois' : 'an'}`}
                                                                 </p>
                                                             </div>
                                                         </div>
@@ -593,21 +577,21 @@ export function ClientSubscriptionsPage() {
                                                     )}
                                                     <div className="flex flex-wrap gap-3 pt-4 border-t border-gray-200">
                                                         <Link
-                                                            to={`/billing/invoices/${subscription.id}`}
+                                                            to={`/client/invoices/${subscription.id}`}
                                                             className="px-4 py-1 text-sm border border-gray-300 rounded-md hover:bg-gray-50 flex items-center"
                                                         >
                                                             <Download className="h-3 w-3 mr-2" />
                                                             Télécharger la facture
                                                         </Link>
                                                         <Link
-                                                            to={`/user/subscription/${subscription.id}/settings`}
+                                                            to={`/client/subscriptions/${subscription.id}/settings`}
                                                             className="px-4 py-1 text-sm border border-gray-300 rounded-md hover:bg-gray-50 flex items-center"
                                                         >
                                                             <Settings className="h-3 w-3 mr-2" />
                                                             Paramètres
                                                         </Link>
                                                         <Link
-                                                            to={`/models/${subscription.modelId}`}
+                                                            to={`/client/models/${subscription.modelId}/usage`}
                                                             className="px-4 py-1 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700 flex items-center"
                                                         >
                                                             Voir le modèle

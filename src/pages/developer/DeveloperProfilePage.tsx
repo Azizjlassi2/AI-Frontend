@@ -185,12 +185,7 @@ export function DeveloperProfilePage() {
                             <p className="text-red-700">Configure your Docker Hub integration to start sharing models , datasets and more with the comunity . You can set it up in your Settings ! </p>
                         </div>
                     )}
-                    {!developer_account?.phone_number && (
-                        <div className="mb-6 bg-red-50 border border-red-200 rounded-lg p-4 flex items-center">
-                            <AlertTriangle className="h-5 w-5 text-red-500 mr-3" />
-                            <p className="text-red-700">Configure your phone number so you can send / receive money . You can set it up in your Settings ! </p>
-                        </div>
-                    )}
+
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                         {/* Profile Card */}
                         <div className="md:col-span-1">
@@ -403,7 +398,7 @@ export function DeveloperProfilePage() {
                                     <div className="mb-6">
                                         <h3 className="text-md font-medium text-gray-900 mb-3 flex items-center">
                                             <Bot className="h-5 w-5 text-blue-600 mr-2" />
-                                            Votre modèles populaires
+                                            Vos modèles populaires
                                         </h3>
                                         {developer_account.models && developer_account.models.length > 0 ? (
                                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -411,7 +406,6 @@ export function DeveloperProfilePage() {
                                                     <Link to={`/developer/models/${model.id}`} key={model.id} className="border border-gray-200 rounded-lg p-4 hover:border-blue-500 hover:shadow-sm transition-all">
                                                         <h4 className="font-medium text-gray-900">{model.name}</h4>
                                                         <p className="text-sm text-gray-500 mb-2">{model.description.split(" ").slice(0, 10).join(" ") + " ..."}</p>
-
                                                     </Link>
                                                 ))}
                                             </div>
@@ -431,38 +425,27 @@ export function DeveloperProfilePage() {
                                     <div>
                                         <h3 className="text-md font-medium text-gray-900 mb-3 flex items-center">
                                             <Database className="h-5 w-5 text-green-600 mr-2" />
-                                            Votre datasets populaires
+                                            Vos datasets populaires
                                         </h3>
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                            <div className="border border-gray-200 rounded-lg p-4 hover:border-green-500 hover:shadow-sm transition-all">
-                                                <h4 className="font-medium text-gray-900">
-                                                    Tunisian Dialect Corpus
-                                                </h4>
-                                                <p className="text-sm text-gray-500 mb-2">
-                                                    Corpus de textes en dialecte tunisien pour NLP
-                                                </p>
-                                                <div className="flex items-center justify-between">
-
-                                                    <span className="text-xs text-gray-500">
-                                                        450 téléchargements
-                                                    </span>
-                                                </div>
+                                        {developer_account.datasets && developer_account.datasets.length > 0 ? (
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                {developer_account.datasets.map((dataset) => (
+                                                    <Link to={`/developer/datasets/${dataset.id}`} key={dataset.id} className="border border-gray-200 rounded-lg p-4 hover:border-green-500 hover:shadow-sm transition-all">
+                                                        <h4 className="font-medium text-gray-900">{dataset.name}</h4>
+                                                        <p className="text-sm text-gray-500 mb-2">{dataset.description.split(" ").slice(0, 10).join(" ") + " ..."}</p>
+                                                        <div className="flex items-center justify-between">
+                                                            <span className="text-xs text-gray-500">
+                                                                {dataset.downloads || 0} téléchargements
+                                                            </span>
+                                                        </div>
+                                                    </Link>
+                                                ))}
                                             </div>
-                                            <div className="border border-gray-200 rounded-lg p-4 hover:border-green-500 hover:shadow-sm transition-all">
-                                                <h4 className="font-medium text-gray-900">
-                                                    Medical Images 2024
-                                                </h4>
-                                                <p className="text-sm text-gray-500 mb-2">
-                                                    Images médicales annotées de patients tunisiens
-                                                </p>
-                                                <div className="flex items-center justify-between">
-
-                                                    <span className="text-xs text-gray-500">
-                                                        320 téléchargements
-                                                    </span>
-                                                </div>
+                                        ) : (
+                                            <div className="text-center text-sm text-gray-500 py-6 border border-dashed border-gray-300 rounded">
+                                                Aucun dataset publié pour le moment.
                                             </div>
-                                        </div>
+                                        )}
                                         <div className="mt-3">
                                             <Link to="/developer/datasets" className="text-sm text-blue-600 hover:text-blue-800 flex items-center">
                                                 Voir tous les datasets

@@ -51,7 +51,7 @@ enum Visibility {
 enum BillingPeriod {
     MONTHLY = 'MONTHLY',
     ANNUAL = 'ANNUAL',
-    WEEKLY = 'WEEKLY',
+
 
 }
 // Interface for subscription plans
@@ -435,12 +435,7 @@ export function AddModelPage() {
                                 <p className="text-red-700">Configure your Docker Hub integration to start sharing models , datasets and more with the comunity . You can set it up in your Settings ! </p>
                             </div>
                         )}
-                        {!developer_account?.phone_number && (
-                            <div className="mb-6 bg-red-50 border border-red-200 rounded-lg p-4 flex items-center">
-                                <AlertTriangle className="h-5 w-5 text-red-500 mr-3" />
-                                <p className="text-red-700">Configure your phone number so you can send / receive money . You can set it up in your Settings ! </p>
-                            </div>
-                        )}
+
                         <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-4xl">
                             <div className="bg-white rounded-xl shadow-sm p-8">
                                 <h1 className="text-3xl font-bold flex items-center mb-8">
@@ -894,7 +889,7 @@ export function AddModelPage() {
                                                         })}>
                                                             <option value={BillingPeriod.MONTHLY}>Mensuel</option>
                                                             <option value={BillingPeriod.ANNUAL}>Annuel</option>
-                                                            <option value={BillingPeriod.WEEKLY}>Hebdomadaire</option>
+
 
                                                         </select>
                                                     </div>
@@ -992,13 +987,10 @@ export function AddModelPage() {
                                                                     {plan.name}
                                                                 </h4>
                                                                 <div className="flex items-center mt-1">
-                                                                    {plan.billingPeriod === BillingPeriod.WEEKLY ? <div className="flex items-center text-gray-600 text-sm">
-                                                                        <Zap className="h-3 w-3 mr-1" />
-                                                                        Hebdomadaire
-                                                                    </div> : <div className="flex items-center text-gray-600 text-sm">
+                                                                    <div className="flex items-center text-gray-600 text-sm">
                                                                         <Calendar className="h-3 w-3 mr-1" />
                                                                         {plan.billingPeriod === BillingPeriod.MONTHLY ? 'Mensuel' : 'Annuel'}
-                                                                    </div>}
+                                                                    </div>
                                                                 </div>
                                                             </div>
                                                             <button type="button" onClick={() => removeSubscriptionPlan(index)} className="text-red-500 hover:text-red-700">
@@ -1013,16 +1005,16 @@ export function AddModelPage() {
                                                                     {plan.price}{' '}
                                                                     <span className="text-lg">{plan.currency}</span>
                                                                 </span>
-                                                                {plan.billingPeriod !== BillingPeriod.WEEKLY && <span className="text-gray-500 text-sm ml-1">
+                                                                {<span className="text-gray-500 text-sm ml-1">
                                                                     /
                                                                     {plan.billingPeriod === BillingPeriod.MONTHLY ? 'mois' : 'an'}
                                                                 </span>}
                                                             </div>
-                                                            {plan.billingPeriod === BillingPeriod.WEEKLY && <div className="text-sm text-gray-600 mt-1">
+                                                            {<div className="text-sm text-gray-600 mt-1">
                                                                 {plan.apiCallsPrice} {plan.currency} par appel
                                                                 API
                                                             </div>}
-                                                            {plan.billingPeriod !== BillingPeriod.WEEKLY && plan.apiCallsLimit && <div className="text-sm text-gray-600 mt-1">
+                                                            {plan.apiCallsLimit && <div className="text-sm text-gray-600 mt-1">
                                                                 {plan.apiCallsLimit.toLocaleString()} appels
                                                                 API inclus
                                                             </div>}
@@ -1149,7 +1141,7 @@ export function AddModelPage() {
                                         <button
                                             type="submit"
                                             className="w-full bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 flex items-center justify-center disabled:opacity-70 disabled:cursor-not-allowed"
-                                            disabled={isSubmitting}
+                                            disabled={isSubmitting || !developer_account?.docker_username}
                                         >
                                             {isSubmitting ? (
                                                 <>

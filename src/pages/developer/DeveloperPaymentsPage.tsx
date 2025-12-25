@@ -1,30 +1,24 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { DollarSign, Download, Filter, Calendar, CreditCard, ArrowUpRight, ArrowDownRight, RefreshCw, ExternalLink, AlertTriangle, Check, Clock, FileText, ChevronDown, Database, BarChart2 } from 'lucide-react';
+import { DollarSign, Download, Filter, Calendar, CreditCard, ArrowUpRight, ArrowDownRight, RefreshCw, ExternalLink, AlertTriangle, Check, Clock, FileText, ChevronDown, Database, BarChart2, Bot } from 'lucide-react';
 import { DeveloperDashboardHeader } from '../../components/developer-dashboard/DeveloperDashboardHeader';
 import { DeveloperDashboardSidebar } from '../../components/developer-dashboard/DeveloperDashboardSidebar';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Cell } from 'recharts';
-enum PaymentStatus {
-  PAID = 'PAID',
-  PENDING = 'PENDING',
-  FAILED = 'FAILED',
-}
-enum PaymentType {
-  MODEL_SUBSCRIPTION = 'MODEL_SUBSCRIPTION',
-  DATASET_PURCHASE = 'DATASET_PURCHASE',
-  API_USAGE = 'API_USAGE',
-}
+import { PaymentMethod, PaymentStatus, PaymentType } from '../../types/shared';
+import axios from 'axios';
+import { useAuth } from '../../context/AuthContext';
+
 interface Payment {
   id: string;
   date: string;
   amount: number;
   currency: string;
-  status: PaymentStatus;
+
   type: PaymentType;
   resourceId: number;
   resourceName: string;
   customerName: string;
-  invoiceUrl: string;
+  invoiceId: string;
 }
 interface RevenueData {
   totalRevenue: number;
@@ -48,111 +42,143 @@ interface RevenueData {
     amount: number;
   }[];
 }
-interface PayoutMethod {
-  id: string;
-  type: 'bank_account' | 'paypal';
-  details: {
-    bankName?: string;
-    accountNumber?: string;
-    email?: string;
-  };
-  isDefault: boolean;
-}
+
 export function DeveloperPaymentsPage() {
+
+
+  const { token } = useAuth();
   const [activeTab, setActiveTab] = useState('payments');
   const [payments, setPayments] = useState<Payment[]>([]);
   const [revenueData, setRevenueData] = useState<RevenueData | null>(null);
-  const [payoutMethods, setPayoutMethods] = useState<PayoutMethod[]>([]);
+  const [isStatusOpen, setIsStatusOpen] = useState(false);
+  const [isTypeOpen, setIsTypeOpen] = useState(false);
+
   const [isLoading, setIsLoading] = useState(true);
   const [dateRange, setDateRange] = useState<'7d' | '30d' | '90d' | 'all'>('30d');
   const [statusFilter, setStatusFilter] = useState<PaymentStatus | null>(null);
   const [typeFilter, setTypeFilter] = useState<PaymentType | null>(null);
-  const [selectedPayoutTab, setSelectedPayoutTab] = useState<'overview' | 'methods' | 'history'>('overview');
+  const [selectedPayoutTab, setSelectedPayoutTab] = useState<'overview' | 'history'>('overview');
   const [isPayoutModalOpen, setIsPayoutModalOpen] = useState(false);
+
+
+
+  const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
+  useEffect(() => {
+
+    const settingsString = localStorage.getItem('developerSettings');
+    if (settingsString) {
+      const settings = JSON.parse(settingsString);
+      if (settings.paymentMethods) {
+        setPaymentMethods(settings.paymentMethods);
+      }
+    }
+  }, []);
+
+
+
   useEffect(() => {
     const fetchPaymentsData = async () => {
       setIsLoading(true);
       try {
-        // In a real app, this would be an API call
+
         await new Promise(resolve => setTimeout(resolve, 800));
         // Mock payments data
+
+        const response = await axios.get(`${import.meta.env.VITE_BACKEND_HOST}/api/v1/developer/payments`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        })
+        const paymentsData = response.data.data.map((payment: any) => ({
+          id: payment.id,
+          date: payment.date,
+          amount: payment.amount,
+          currency: payment.currency,
+          type: payment.type,
+          resourceId: payment.resourceId,
+          resourceName: payment.resourceName,
+          customerName: payment.customerName,
+          invoiceId: payment.invoiceId
+        }));
+
         const mockPayments: Payment[] = [{
           id: 'PAY-2024-001',
           date: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
           amount: 199.99,
           currency: 'TND',
-          status: PaymentStatus.PAID,
+
           type: PaymentType.MODEL_SUBSCRIPTION,
           resourceId: 1,
           resourceName: 'ArabicBERT',
           customerName: 'Société Tunisienne IA',
-          invoiceUrl: '#'
+          invoiceId: '#'
         }, {
           id: 'PAY-2024-002',
           date: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
           amount: 149.99,
           currency: 'TND',
-          status: PaymentStatus.PAID,
+
           type: PaymentType.MODEL_SUBSCRIPTION,
           resourceId: 2,
           resourceName: 'TunBERT',
           customerName: 'Université de Tunis',
-          invoiceUrl: '#'
+          invoiceId: '#'
         }, {
           id: 'PAY-2024-003',
           date: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
           amount: 299.5,
           currency: 'TND',
-          status: PaymentStatus.PAID,
+
           type: PaymentType.DATASET_PURCHASE,
           resourceId: 1,
           resourceName: 'Tunisian Dialect Corpus',
           customerName: 'Institut National des Langues',
-          invoiceUrl: '#'
+          invoiceId: '#'
         }, {
           id: 'PAY-2024-004',
           date: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString(),
           amount: 78.25,
           currency: 'TND',
-          status: PaymentStatus.PAID,
+
           type: PaymentType.API_USAGE,
           resourceId: 1,
           resourceName: 'ArabicBERT API',
           customerName: 'Tech Solutions SARL',
-          invoiceUrl: '#'
+          invoiceId: '#'
         }, {
           id: 'PAY-2024-005',
           date: new Date(Date.now() - 12 * 24 * 60 * 60 * 1000).toISOString(),
           amount: 450.0,
           currency: 'TND',
-          status: PaymentStatus.PAID,
+
           type: PaymentType.DATASET_PURCHASE,
           resourceId: 2,
           resourceName: 'Medical Images 2024',
           customerName: 'Hôpital Universitaire de Tunis',
-          invoiceUrl: '#'
+          invoiceId: '#'
         }, {
           id: 'PAY-2024-006',
           date: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
           amount: 199.99,
           currency: 'TND',
-          status: PaymentStatus.PENDING,
+
           type: PaymentType.MODEL_SUBSCRIPTION,
           resourceId: 3,
           resourceName: 'MedicalVision AI',
           customerName: 'Clinique Al Farabi',
-          invoiceUrl: '#'
+          invoiceId: '#'
         }, {
           id: 'PAY-2024-007',
           date: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000).toISOString(),
           amount: 49.99,
           currency: 'TND',
-          status: PaymentStatus.FAILED,
+
           type: PaymentType.MODEL_SUBSCRIPTION,
           resourceId: 4,
           resourceName: 'TunisianNER',
           customerName: 'Startup Innovation Hub',
-          invoiceUrl: '#'
+          invoiceId: '#'
         }];
         // Generate mock revenue data
         const mockRevenueData: RevenueData = {
@@ -200,25 +226,10 @@ export function DeveloperPaymentsPage() {
           revenueByDay: generateDailyRevenueData()
         };
         // Mock payout methods
-        const mockPayoutMethods: PayoutMethod[] = [{
-          id: 'pm_1',
-          type: 'bank_account',
-          details: {
-            bankName: 'Banque Nationale de Tunisie',
-            accountNumber: '•••• 5678'
-          },
-          isDefault: true
-        }, {
-          id: 'pm_2',
-          type: 'paypal',
-          details: {
-            email: 'ai.lab.tunisia@example.com'
-          },
-          isDefault: false
-        }];
+
         setPayments(mockPayments);
         setRevenueData(mockRevenueData);
-        setPayoutMethods(mockPayoutMethods);
+
       } catch (error) {
         console.error('Error fetching payments data:', error);
       } finally {
@@ -227,6 +238,7 @@ export function DeveloperPaymentsPage() {
     };
     fetchPaymentsData();
   }, [dateRange]);
+
   function generateMonthlyRevenueData() {
     const data = [];
     const now = new Date();
@@ -286,7 +298,7 @@ export function DeveloperPaymentsPage() {
   const handleTypeFilterChange = (type: PaymentType | null) => {
     setTypeFilter(type);
   };
-  const handlePayoutTabChange = (tab: 'overview' | 'methods' | 'history') => {
+  const handlePayoutTabChange = (tab: 'overview' | 'history') => {
     setSelectedPayoutTab(tab);
   };
   const togglePayoutModal = () => {
@@ -329,7 +341,7 @@ export function DeveloperPaymentsPage() {
   const getTypeIcon = (type: PaymentType) => {
     switch (type) {
       case PaymentType.MODEL_SUBSCRIPTION:
-        return <div className="h-5 w-5 text-blue-600" />;
+        return <Bot className="h-5 w-5 text-blue-600" />;
       case PaymentType.DATASET_PURCHASE:
         return <Database className="h-5 w-5 text-green-600" />;
       case PaymentType.API_USAGE:
@@ -352,7 +364,7 @@ export function DeveloperPaymentsPage() {
   };
   // Apply filters
   const filteredPayments = payments.filter(payment => {
-    const matchesStatus = !statusFilter || payment.status === statusFilter;
+
     const matchesType = !typeFilter || payment.type === typeFilter;
     // Filter by date range
     const paymentDate = new Date(payment.date);
@@ -374,7 +386,7 @@ export function DeveloperPaymentsPage() {
         break;
     }
     const matchesDateRange = paymentDate >= startDate;
-    return matchesStatus && matchesType && matchesDateRange;
+    return matchesType && matchesDateRange;
   });
   // Custom tooltip for charts
   const CustomTooltip = ({
@@ -395,7 +407,7 @@ export function DeveloperPaymentsPage() {
     return null;
   };
   // Calculate total amount from filtered payments
-  const totalFilteredAmount = filteredPayments.reduce((sum, payment) => payment.status === PaymentStatus.PAID ? sum + payment.amount : sum, 0);
+  const totalFilteredAmount = filteredPayments.reduce((sum, payment) => sum + payment.amount, 0);
   return <div className="min-h-screen bg-gray-50">
     <DeveloperDashboardHeader />
     <div className="flex">
@@ -407,26 +419,7 @@ export function DeveloperPaymentsPage() {
               <DollarSign className="h-6 w-6 text-green-600 mr-2" />
               Paiements
             </h1>
-            <div className="flex items-center space-x-2">
-              <div className="flex items-center bg-white rounded-md border border-gray-200 shadow-sm">
-                <button className={`px-3 py-1.5 text-sm rounded-md ${dateRange === '7d' ? 'bg-blue-600 text-white' : 'text-gray-700 hover:bg-gray-100'}`} onClick={() => handleDateRangeChange('7d')}>
-                  7 jours
-                </button>
-                <button className={`px-3 py-1.5 text-sm rounded-md ${dateRange === '30d' ? 'bg-blue-600 text-white' : 'text-gray-700 hover:bg-gray-100'}`} onClick={() => handleDateRangeChange('30d')}>
-                  30 jours
-                </button>
-                <button className={`px-3 py-1.5 text-sm rounded-md ${dateRange === '90d' ? 'bg-blue-600 text-white' : 'text-gray-700 hover:bg-gray-100'}`} onClick={() => handleDateRangeChange('90d')}>
-                  90 jours
-                </button>
-                <button className={`px-3 py-1.5 text-sm rounded-md ${dateRange === 'all' ? 'bg-blue-600 text-white' : 'text-gray-700 hover:bg-gray-100'}`} onClick={() => handleDateRangeChange('all')}>
-                  Tout
-                </button>
-              </div>
-              <button className="px-3 py-1.5 text-sm bg-white text-gray-700 rounded-md border border-gray-200 shadow-sm hover:bg-gray-100 flex items-center">
-                <Download className="h-4 w-4 mr-1.5" />
-                Exporter
-              </button>
-            </div>
+
           </div>
           {/* Revenue Overview */}
           {revenueData && <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
@@ -566,9 +559,7 @@ export function DeveloperPaymentsPage() {
                 <button className={`px-6 py-4 text-sm font-medium ${selectedPayoutTab === 'overview' ? 'border-b-2 border-blue-500 text-blue-600' : 'text-gray-500 hover:text-gray-700 hover:border-gray-300'}`} onClick={() => handlePayoutTabChange('overview')}>
                   Aperçu des paiements
                 </button>
-                <button className={`px-6 py-4 text-sm font-medium ${selectedPayoutTab === 'methods' ? 'border-b-2 border-blue-500 text-blue-600' : 'text-gray-500 hover:text-gray-700 hover:border-gray-300'}`} onClick={() => handlePayoutTabChange('methods')}>
-                  Méthodes de paiement
-                </button>
+
                 <button className={`px-6 py-4 text-sm font-medium ${selectedPayoutTab === 'history' ? 'border-b-2 border-blue-500 text-blue-600' : 'text-gray-500 hover:text-gray-700 hover:border-gray-300'}`} onClick={() => handlePayoutTabChange('history')}>
                   Historique des versements
                 </button>
@@ -654,53 +645,7 @@ export function DeveloperPaymentsPage() {
                   </div>
                 </div>
               </div>}
-              {selectedPayoutTab === 'methods' && <div>
-                <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
-                  <div>
-                    <h2 className="text-lg font-semibold text-gray-900">
-                      Méthodes de paiement
-                    </h2>
-                    <p className="text-sm text-gray-500">
-                      Gérer vos méthodes de versement
-                    </p>
-                  </div>
-                  <div className="mt-4 md:mt-0">
-                    <button className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center">
-                      <CreditCard className="h-4 w-4 mr-2" />
-                      Ajouter une méthode
-                    </button>
-                  </div>
-                </div>
-                <div className="space-y-4">
-                  {payoutMethods.map(method => <div key={method.id} className="border border-gray-200 rounded-lg p-4">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center">
-                        {method.type === 'bank_account' ? <div className="h-10 w-10 bg-blue-100 rounded-full flex items-center justify-center mr-4">
-                          <CreditCard className="h-5 w-5 text-blue-600" />
-                        </div> : <div className="h-10 w-10 bg-indigo-100 rounded-full flex items-center justify-center mr-4">
-                          <DollarSign className="h-5 w-5 text-indigo-600" />
-                        </div>}
-                        <div>
-                          <h3 className="font-medium text-gray-900">
-                            {method.type === 'bank_account' ? 'Compte bancaire' : 'PayPal'}
-                          </h3>
-                          <p className="text-sm text-gray-500">
-                            {method.type === 'bank_account' ? `${method.details.bankName} - ${method.details.accountNumber}` : method.details.email}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="flex items-center">
-                        {method.isDefault && <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 mr-2">
-                          Par défaut
-                        </span>}
-                        <button className="text-gray-400 hover:text-gray-600">
-                          <ChevronDown className="h-5 w-5" />
-                        </button>
-                      </div>
-                    </div>
-                  </div>)}
-                </div>
-              </div>}
+
               {selectedPayoutTab === 'history' && <div>
                 <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
                   <div>
@@ -756,9 +701,9 @@ export function DeveloperPaymentsPage() {
                           </span>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                          <button className="text-blue-600 hover:text-blue-900">
+                          <Link to="/developer/payouts/1" className="text-blue-600 hover:text-blue-900">
                             Détails
-                          </button>
+                          </Link>
                         </td>
                       </tr>
                       <tr>
@@ -818,46 +763,56 @@ export function DeveloperPaymentsPage() {
                 </h2>
                 <div className="flex flex-wrap gap-2">
                   <div className="relative">
-                    <button className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg bg-white text-gray-700 hover:bg-gray-50">
+                    <button
+                      className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg bg-white text-gray-700 hover:bg-gray-50"
+                      onClick={() => setIsStatusOpen(!isStatusOpen)} // Toggle on click
+                    >
                       <Filter className="h-5 w-5 mr-2" />
                       {statusFilter ? getStatusBadge(statusFilter) : 'Tous les statuts'}
                       <ChevronDown className="h-4 w-4 ml-2" />
                     </button>
-                    <div className="absolute left-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-10 border border-gray-200">
-                      <button className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" onClick={() => handleStatusFilterChange(null)}>
-                        Tous les statuts
-                      </button>
-                      <button className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" onClick={() => handleStatusFilterChange(PaymentStatus.PAID)}>
-                        Payé
-                      </button>
-                      <button className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" onClick={() => handleStatusFilterChange(PaymentStatus.PENDING)}>
-                        En attente
-                      </button>
-                      <button className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" onClick={() => handleStatusFilterChange(PaymentStatus.FAILED)}>
-                        Échoué
-                      </button>
-                    </div>
+                    {isStatusOpen && (
+                      <div className="absolute left-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-10 border border-gray-200">
+                        <button className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" onClick={() => handleStatusFilterChange(null)}>
+                          Tous les statuts
+                        </button>
+                        <button className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" onClick={() => handleStatusFilterChange(PaymentStatus.PAID)}>
+                          Payé
+                        </button>
+                        <button className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" onClick={() => handleStatusFilterChange(PaymentStatus.PENDING)}>
+                          En attente
+                        </button>
+                        <button className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" onClick={() => handleStatusFilterChange(PaymentStatus.FAILED)}>
+                          Échoué
+                        </button>
+                      </div>
+                    )}
                   </div>
                   <div className="relative">
-                    <button className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg bg-white text-gray-700 hover:bg-gray-50">
+                    <button
+                      className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg bg-white text-gray-700 hover:bg-gray-50"
+                      onClick={() => setIsTypeOpen(!isTypeOpen)} // Toggle on click
+                    >
                       <Filter className="h-5 w-5 mr-2" />
                       {typeFilter ? getTypeLabel(typeFilter) : 'Tous les types'}
                       <ChevronDown className="h-4 w-4 ml-2" />
                     </button>
-                    <div className="absolute left-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-10 border border-gray-200">
-                      <button className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" onClick={() => handleTypeFilterChange(null)}>
-                        Tous les types
-                      </button>
-                      <button className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" onClick={() => handleTypeFilterChange(PaymentType.MODEL_SUBSCRIPTION)}>
-                        Abonnement modèle
-                      </button>
-                      <button className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" onClick={() => handleTypeFilterChange(PaymentType.DATASET_PURCHASE)}>
-                        Achat dataset
-                      </button>
-                      <button className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" onClick={() => handleTypeFilterChange(PaymentType.API_USAGE)}>
-                        Utilisation API
-                      </button>
-                    </div>
+                    {isTypeOpen && (
+                      <div className="absolute left-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-10 border border-gray-200">
+                        <button className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" onClick={() => handleTypeFilterChange(null)}>
+                          Tous les types
+                        </button>
+                        <button className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" onClick={() => handleTypeFilterChange(PaymentType.MODEL_SUBSCRIPTION)}>
+                          Abonnement modèle
+                        </button>
+                        <button className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" onClick={() => handleTypeFilterChange(PaymentType.DATASET_PURCHASE)}>
+                          Achat dataset
+                        </button>
+                        <button className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" onClick={() => handleTypeFilterChange(PaymentType.API_USAGE)}>
+                          Utilisation API
+                        </button>
+                      </div>
+                    )}
                   </div>
                   <button className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg bg-white text-gray-700 hover:bg-gray-50">
                     <RefreshCw className="h-5 w-5 mr-2" />
@@ -899,9 +854,7 @@ export function DeveloperPaymentsPage() {
                     <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Montant
                     </th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Statut
-                    </th>
+
                     <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Actions
                     </th>
@@ -936,15 +889,13 @@ export function DeveloperPaymentsPage() {
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                       {formatCurrency(payment.amount)} {payment.currency}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      {getStatusBadge(payment.status)}
-                    </td>
+
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <div className="flex items-center justify-end space-x-2">
-                        <a href={payment.invoiceUrl} className="text-blue-600 hover:text-blue-900 flex items-center" target="_blank" rel="noopener noreferrer">
+                        <Link to={`/invoices/${payment.invoiceId}`} className="text-blue-600 hover:text-blue-900 flex items-center" target="_blank" rel="noopener noreferrer">
                           <FileText className="h-4 w-4 mr-1" />
                           Facture
-                        </a>
+                        </Link>
                       </div>
                     </td>
                   </tr>)}
@@ -981,87 +932,157 @@ export function DeveloperPaymentsPage() {
         </div>
       </main>
     </div>
+
     {/* Payout Modal */}
-    {isPayoutModalOpen && <div className="fixed inset-0 z-50 overflow-y-auto">
-      <div className="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
-        <div className="fixed inset-0 transition-opacity" aria-hidden="true">
-          <div className="absolute inset-0 bg-gray-500 opacity-75"></div>
-        </div>
-        <span className="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">
-          &#8203;
-        </span>
-        <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
-          <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-            <div className="sm:flex sm:items-start">
-              <div className="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-green-100 sm:mx-0 sm:h-10 sm:w-10">
-                <DollarSign className="h-6 w-6 text-green-600" />
-              </div>
-              <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
-                <h3 className="text-lg leading-6 font-medium text-gray-900">
-                  Demander un versement
-                </h3>
-                <div className="mt-2">
-                  <p className="text-sm text-gray-500">
-                    Vous êtes sur le point de demander un versement de votre
-                    solde disponible. Ce processus peut prendre jusqu'à 7
-                    jours ouvrables.
-                  </p>
-                  <div className="mt-4">
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Méthode de versement
-                    </label>
-                    <select className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
-                      <option>
-                        Banque Nationale de Tunisie •••• 5678 (Par défaut)
-                      </option>
-                      <option>PayPal - ai.lab.tunisia@example.com</option>
-                    </select>
-                  </div>
-                  <div className="mt-4">
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Montant à verser
-                    </label>
-                    <div className="mt-1 relative rounded-md shadow-sm">
-                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <span className="text-gray-500 sm:text-sm">
-                          TND
-                        </span>
-                      </div>
-                      <input type="text" className="focus:ring-blue-500 focus:border-blue-500 block w-full pl-12 pr-12 py-2 sm:text-sm border-gray-300 rounded-md" placeholder="0.00" defaultValue="2,450.75" />
-                      <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
-                        <button className="text-blue-600 hover:text-blue-800 text-sm font-medium">
-                          Max
-                        </button>
+    {isPayoutModalOpen && (
+      <div className="fixed inset-0 z-50 overflow-y-auto">
+        <div className="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+          <div className="fixed inset-0 transition-opacity" aria-hidden="true">
+            <div className="absolute inset-0 bg-gray-500 opacity-75"></div>
+          </div>
+          <span className="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">
+            &#8203;
+          </span>
+          <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+            <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+              <div className="sm:flex sm:items-start">
+                <div className="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-green-100 sm:mx-0 sm:h-10 sm:w-10">
+                  <DollarSign className="h-6 w-6 text-green-600" />
+                </div>
+                <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
+                  <h3 className="text-lg leading-6 font-medium text-gray-900">
+                    Demander un versement
+                  </h3>
+                  <div className="mt-2">
+                    <p className="text-sm text-gray-500">
+                      Vous pouvez demander un versement de vos revenus
+                      disponibles. Assurez-vous que votre solde est supérieur au
+                      seuil minimum de versement de 500 TND.
+                    </p>
+
+                    <div className="mt-4">
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Méthode de versement
+                      </label>
+                      {paymentMethods.length === 0 ? (
+                        <div className="bg-yellow-50 border border-yellow-200 rounded-md p-3">
+                          <div className="flex items-start">
+                            <AlertTriangle className="h-5 w-5 text-yellow-400 flex-shrink-0 mt-0.5 mr-2" />
+                            <div>
+                              <p className="text-sm font-medium text-yellow-800">
+                                Aucune méthode de paiement configurée
+                              </p>
+                              <p className="text-sm text-yellow-700 mt-1">
+                                Configurez au moins une méthode de versement dans vos{' '}
+                                <Link
+                                  to="/developer/settings?tab=billing"
+                                  className="font-medium underline hover:text-yellow-900"
+                                  onClick={() => setIsPayoutModalOpen(false)}
+                                >
+                                  paramètres de paiement
+                                </Link>{' '}
+                                pour pouvoir effectuer un versement.
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      ) : (
+                        <select className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                          {paymentMethods.map((method) => {
+                            let displayLabel = '';
+                            let maskedDetails = '';
+
+                            switch (method.type) {
+                              case 'bank_transfer':
+                                displayLabel = 'Virement Bancaire';
+                                maskedDetails = `${method.details.bankName} •••• ${method.details.accountNumber.slice(-4)}`;
+                                break;
+                              case 'd17_card':
+                                displayLabel = 'Carte D17';
+                                maskedDetails = `•••• •••• •••• ${method.details.cardNumber.slice(-4)}`;
+                                break;
+                              case 'postal_check':
+                                displayLabel = 'Chèque Postal (CCP)';
+                                maskedDetails = `CCP ${method.details.ccpNumber.slice(0, 3)}****`;
+                                break;
+                              default:
+                                displayLabel = 'Méthode inconnue';
+                                maskedDetails = '';
+                            }
+
+                            return (
+                              <option key={method.id} value={method.id}>
+                                {displayLabel} - {maskedDetails} {method.isDefault && '(Par défaut)'}
+                              </option>
+                            );
+                          })}
+                        </select>
+                      )}
+                    </div>
+                    {paymentMethods.length !== 0 && <div className="mt-4">
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Montant à verser
+                      </label>
+                      <div className="mt-1 relative rounded-md shadow-sm">
+                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                          <span className="text-gray-500 sm:text-sm">
+                            TND
+                          </span>
+                        </div>
+                        <input
+                          type="text"
+                          className="focus:ring-blue-500 focus:border-blue-500 block w-full pl-12 pr-12 py-2 sm:text-sm border-gray-300 rounded-md"
+                          placeholder="0.00"
+                          defaultValue="2,450.75"
+                        />
+                        <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
+                          <button className="text-blue-600 hover:text-blue-800 text-sm font-medium">
+                            Max
+                          </button>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                  <div className="mt-4 p-3 bg-yellow-50 border border-yellow-100 rounded-md">
-                    <div className="flex">
-                      <div className="flex-shrink-0">
-                        <AlertTriangle className="h-5 w-5 text-yellow-400" />
+                    }
+                    {paymentMethods.length !== 0 &&
+                      <div className="mt-4 p-3 bg-yellow-50 border border-yellow-100 rounded-md">
+                        <div className="flex">
+                          <div className="flex-shrink-0">
+                            <AlertTriangle className="h-5 w-5 text-yellow-400" />
+                          </div>
+                          <div className="ml-3">
+                            <p className="text-sm text-yellow-700">
+                              Des frais de service de 1.5% s'appliquent à tous
+                              les versements, avec un minimum de 5 TND.
+                            </p>
+                          </div>
+                        </div>
                       </div>
-                      <div className="ml-3">
-                        <p className="text-sm text-yellow-700">
-                          Des frais de service de 1.5% s'appliquent à tous
-                          les versements, avec un minimum de 5 TND.
-                        </p>
-                      </div>
-                    </div>
+                    }
+
                   </div>
                 </div>
               </div>
             </div>
-          </div>
-          <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
-            <button type="button" className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-green-600 text-base font-medium text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 sm:ml-3 sm:w-auto sm:text-sm" onClick={togglePayoutModal}>
-              Confirmer le versement
-            </button>
-            <button type="button" className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm" onClick={togglePayoutModal}>
-              Annuler
-            </button>
+
+            <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+              {paymentMethods.length !== 0 && <button
+                type="button"
+                className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-green-600 text-base font-medium text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 sm:ml-3 sm:w-auto sm:text-sm"
+                onClick={togglePayoutModal}
+              >
+                Confirmer le versement
+              </button>}
+              <button
+                type="button"
+                className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
+                onClick={togglePayoutModal}
+              >
+                Annuler
+              </button>
+            </div>
           </div>
         </div>
       </div>
-    </div>}
+    )}
   </div>;
 }

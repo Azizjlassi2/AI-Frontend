@@ -61,24 +61,8 @@ export function DashboardHeader() {
                         </button>
                         {showProfileMenu && (
                             <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-md shadow-lg py-1 z-50 border border-gray-200 dark:border-gray-700">
-                                <Link
-                                    to="/admin/profile"
-                                    className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center"
-                                    onClick={() => setShowProfileMenu(false)}
-                                >
-                                    <UserIcon className="h-4 w-4 mr-2" />
-                                    Mon profil
-                                </Link>
-                                <Link
-                                    to="/admin/settings"
-                                    className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center"
-                                    onClick={() => setShowProfileMenu(false)}
-                                >
-                                    <SettingsIcon className="h-4 w-4 mr-2" />
-                                    Paramètres
-                                </Link>
 
-                                <div className="border-t border-gray-200 dark:border-gray-700 my-1"></div>
+
                                 <button
                                     onClick={handleLogout}
                                     className="block w-full text-left px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center"

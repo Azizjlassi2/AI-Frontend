@@ -12,7 +12,7 @@ export function ModelPaymentConfirmationPage() {
     const location = useLocation();
 
     const queryParams = new URLSearchParams(location.search);
-    const payment_ref = queryParams.get("payment_ref");
+    const payment_ref = queryParams.get("payment_token") || queryParams.get("payment_ref") || "";
     const navigate = useNavigate();
     const [subscription, setSubscription] = useState<SubscriptionDTO | null>(null);
     const [isLoading, setIsLoading] = useState(true);
@@ -111,8 +111,7 @@ export function ModelPaymentConfirmationPage() {
                 return <Calendar className="h-5 w-5 text-blue-600" />;
             case BillingPeriod.ANNUAL:
                 return <Calendar className="h-5 w-5 text-green-600" />;
-            case BillingPeriod.PAY_AS_YOU_GO:
-                return <Zap className="h-5 w-5 text-purple-600" />;
+
             default:
                 return <CreditCard className="h-5 w-5 text-blue-600" />;
         }
@@ -170,9 +169,9 @@ export function ModelPaymentConfirmationPage() {
                                     </div>
                                 </div>
                                 <div className="text-right">
-                                    <div className="text-xl font-bold text-gray-900">
-                                        {subscription.billingPeriod === BillingPeriod.PAY_AS_YOU_GO ? <>
-                                            {subscription.apiCallsLimit} {subscription.planCurrency}
+                                    <div className="text-xl font-medium text-gray-900">
+                                        <>
+                                            {subscription.apiCallsLimit}
                                             <span className="text-sm font-normal text-gray-600">
                                                 /appel
                                             </span>
@@ -182,9 +181,9 @@ export function ModelPaymentConfirmationPage() {
                                                 /
                                                 {subscription.billingPeriod === BillingPeriod.MONTHLY ? 'mois' : 'an'}
                                             </span>
-                                        </>}
+                                        </>
                                     </div>
-                                    {subscription.billingPeriod !== BillingPeriod.PAY_AS_YOU_GO && subscription.apiCallsLimit && <p className="text-sm text-gray-600 mt-1">
+                                    {(subscription.billingPeriod === BillingPeriod.MONTHLY || subscription.billingPeriod === BillingPeriod.ANNUAL) && subscription.apiCallsLimit && <p className="text-sm text-gray-600 mt-1">
                                         {subscription.apiCallsLimit.toLocaleString()} appels API
                                         inclus
                                     </p>}
@@ -216,7 +215,7 @@ export function ModelPaymentConfirmationPage() {
                                         <Calendar className="h-4 w-4 text-gray-400 mr-2" />
                                         Date de début: {formatDate(subscription.startDate)}
                                     </p>
-                                    {subscription.nextBillingDate && subscription.billingPeriod !== BillingPeriod.PAY_AS_YOU_GO && <p className="flex items-center text-gray-800">
+                                    {subscription.nextBillingDate && (subscription.billingPeriod === BillingPeriod.MONTHLY || subscription.billingPeriod === BillingPeriod.ANNUAL) && <p className="flex items-center text-gray-800">
                                         <Clock className="h-4 w-4 text-gray-400 mr-2" />
                                         Prochaine facturation:{' '}
                                         {formatDate(subscription.nextBillingDate)}

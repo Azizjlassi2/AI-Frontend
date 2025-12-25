@@ -23,15 +23,9 @@ import { DeveloperDashboardSidebar } from '../../components/developer-dashboard/
 import axios from 'axios'
 import { useError } from '../../context/ErrorContext'
 import { useSuccess } from '../../context/SuccessContext'
+import { BillingPeriod, Visibility } from '../../types/shared'
 
-enum Visibility {
-    PUBLIC = 'PUBLIC',
-    PRIVATE = 'PRIVATE',
-}
-enum BillingPeriod {
-    MONTHLY = 'MONTHLY',
-    ANNUAL = 'ANNUAL',
-}
+
 interface ApiEndpoint {
     id?: number
     path: string
@@ -86,6 +80,9 @@ interface Model {
     performance: PerformanceMetric
     subscriptionPlans: PricingTier[]
 }
+
+
+
 export function DeveloperUpdateModelPage() {
     const { id } = useParams<{
         id: string
@@ -112,10 +109,13 @@ export function DeveloperUpdateModelPage() {
         requestBody: '',
     })
 
-    const [newTask, setNewTask] = useState<ModelTask>({
-        id: Date.now(),
-        name: '',
-    })
+
+    const [availableTasks, setAvailableTasks] = useState<ModelTask[]>([])
+    const [isLoadingTasks, setIsLoadingTasks] = useState<boolean>(true)
+
+    const [searchTask, setSearchTask] = useState<string>('')
+
+
     const [newPricingTier, setNewPricingTier] = useState<PricingTier>({
         id: Date.now(),
         name: '',
@@ -145,8 +145,56 @@ export function DeveloperUpdateModelPage() {
             recallScore: 0,
             accuracyScore: 0,
         })
+    const convertDtoToModel = (data: any): Model => {
+
+        return {
+            id: data.id,
+            name: data.name,
+            description: data.description,
+            visibility: data.visibility,
+
+            endpoints: data.endpoints ?? [],
+            tasks: data.tasks ?? [],
+            technicalDetails: {
+                architecture:
+                    data.architecture ?? "",
+                parameters: data.parameters ?? "",
+                trainingDataset:
+                    data.trainingDataset ?? "",
+                framework: data.framework ?? "",
+                inputFormat: data.inputFormat ?? "",
+                outputFormat: data.outputFormat ?? "",
+                inferenceTime: data.inferenceTime ?? "",
+            },
+            performance:
+            {
+                f1Score: data.performance?.f1Score ?? 0,
+                precisionScore: data.performance?.precisionScore ?? 0,
+                recallScore: data.performance?.recallScore ?? 0,
+                accuracyScore: data.performance?.accuracyScore ?? 0,
+            }
+            ,
+            subscriptionPlans:
+                data.subscriptionPlans.length === 0
+                    ? []
+                    : data.subscriptionPlans.map((plan: any) => ({
+                        id: plan.id,
+                        name: plan.name,
+                        description: plan.description,
+                        price: plan.price,
+                        currency: plan.currency,
+                        billingPeriod: plan.billingPeriod,
+                        features: plan.features,
+                        apiCallsLimit: plan.apiCallsLimit,
+
+                    })),
+
+        }
+    }
 
     useEffect(() => {
+
+
         const fetchModel = async () => {
             setIsLoading(true)
             try {
@@ -158,53 +206,7 @@ export function DeveloperUpdateModelPage() {
                 const data = response.data.data;
 
                 // Mock data for a single model
-                const mockModel: Model = {
-                    id: data.id,
-                    name: data.name,
-                    description: data.description,
-                    visibility: data.visibility,
-
-
-
-                    endpoints: data.endpoints ?? [],
-                    tasks: data.tasks ?? [],
-                    technicalDetails: {
-                        architecture:
-                            data.architecture ?? "",
-                        parameters: data.parameters ?? "",
-                        trainingDataset:
-                            data.trainingDataset ?? "",
-                        framework: data.framework ?? "",
-                        inputFormat: data.inputFormat ?? "",
-                        outputFormat: data.outputFormat ?? "",
-                        inferenceTime: data.inferenceTime ?? "",
-                    },
-                    performance:
-                    {
-                        f1Score: data.performance?.f1Score ?? 0,
-                        precisionScore: data.performance?.precisionScore ?? 0,
-                        recallScore: data.performance?.recallScore ?? 0,
-                        accuracyScore: data.performance?.accuracyScore ?? 0,
-                    }
-                    ,
-                    subscriptionPlans:
-                        data.subscriptionPlans.length === 0
-                            ? []
-                            : data.subscriptionPlans.map((plan: any) => ({
-                                id: plan.id,
-                                name: plan.name,
-                                description: plan.description,
-                                price: plan.price,
-                                currency: plan.currency,
-                                billingPeriod: plan.billingPeriod,
-                                features: plan.features,
-                                apiCallsLimit: plan.apiCallsLimit,
-
-                            })),
-
-
-
-                }
+                const mockModel: Model = convertDtoToModel(data)
                 setModel(mockModel)
                 setFormData(mockModel)
             } catch (err) {
@@ -218,6 +220,8 @@ export function DeveloperUpdateModelPage() {
         }
         fetchModel()
     }, [id])
+
+
     const handleInputChange = (
         e: React.ChangeEvent<
             HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
@@ -284,32 +288,67 @@ export function DeveloperUpdateModelPage() {
         })
     }
 
-    const handleAddTask = () => {
-        if (!newTask.name.trim()) return
+    // Fetch available tasks from API
+    useEffect(() => {
+        const fetchTasks = async () => {
+            try {
+                const resp = await axios.get(
+                    `${import.meta.env.VITE_BACKEND_HOST}/api/v1/tasks`,
+                    {
+                        headers: {
+                            Authorization: `Bearer ${localStorage.getItem('authToken')}`,
+                        },
+                        withCredentials: true,
+                    }
+                );
 
+                const maybePage = resp.data?.data;
+                const tasksArray: ModelTask[] = Array.isArray(maybePage?.content)
+                    ? maybePage.content
+                    : [];
+
+                setAvailableTasks(tasksArray);
+            } catch (err: any) {
+                setError({
+                    type: 'NETWORK',
+                    message: "Une erreur s'est produite lors de la récupération des tâches."
+                })
+            } finally {
+                setIsLoadingTasks(false);
+            }
+        };
+
+        fetchTasks();
+    }, []);
+
+    // Handle task selection - CORRECTION: mettre à jour formData au lieu de model
+    const addTask = (task: ModelTask) => {
+        setFormData((prev) => {
+            const existing = prev.tasks ?? []
+            if (existing.some((t) => t.id === task.id)) {
+                return prev
+            }
+            return {
+                ...prev,
+                tasks: [...existing, task],
+            }
+        })
+        setSearchTask('')
+    }
+    const filteredTasks = searchTask
+        ? availableTasks
+            .filter((task) =>
+                task.name.toLowerCase().includes(searchTask.toLowerCase()),
+            )
+            .filter((task) => !(formData.tasks || []).some((t) => t.id === task.id))
+        : []
+
+    const handleRemoveTask = (id: number) => {
         setFormData(prev => ({
             ...prev,
-            tasks: [
-                ...(prev.tasks || []),
-                {
-                    ...newTask,
-                    id: Date.now(),
-                },
-            ],
-        }));
-
-        setNewTask({
-            id: Date.now(),
-            name: '',
-        });
+            tasks: (prev.tasks || []).filter((task) => task.id !== id),
+        }))
     }
-    const handleRemoveTask = (id: number) => {
-        setFormData({
-            ...formData,
-            tasks: formData.tasks?.filter((task) => task.id !== id),
-        })
-    }
-
     const handleAddPricingTier = () => {
         if (!newPricingTier.name.trim()) return
         setFormData({
@@ -365,16 +404,16 @@ export function DeveloperUpdateModelPage() {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
         setIsSaving(true)
+
         try {
-            await axios.put(`${import.meta.env.VITE_BACKEND_HOST}/api/v1/developer/models/${id}`,
+            console.log('Submitting form data:', formData);
+            const response = await axios.put(`${import.meta.env.VITE_BACKEND_HOST}/api/v1/developer/models/${id}`,
                 {
                     id: formData.id,
 
                     name: formData.name,
                     description: formData.description,
                     visibility: formData.visibility,
-
-
 
                     endpoints: formData.endpoints ?? [],
                     tasks: formData.tasks ?? [],
@@ -410,23 +449,21 @@ export function DeveloperUpdateModelPage() {
                                 apiCallsLimit: plan.apiCallsLimit,
 
                             })),
-
-
-
                 }, {
                 headers: {
                     'Content-Type': 'application/json',
                     Authorization: `Bearer ${localStorage.getItem('authToken')}`,
                 },
             })
-
-
-
+            const data = response.data.data;
+            console.log('Response data:', data);
+            setFormData(convertDtoToModel(data));
+            console.log('Form data submitted successfully');
             // Show success message
             setSuccess({
                 type: 'MODEL_UPDATED',
                 message: 'Modèle mis à jour avec succès',
-                redirect: `/developer/models/${formData.id}`
+                redirect: `/developer/models/${data.id}`
 
             })
 
@@ -1148,28 +1185,28 @@ export function DeveloperUpdateModelPage() {
                                                 </label>
                                                 <input
                                                     type="text"
-                                                    value={newTask.name}
-                                                    onChange={(e) =>
-                                                        setNewTask({
-                                                            ...newTask,
-                                                            name: e.target.value,
-                                                        })
-                                                    }
-                                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
-                                                    placeholder="ex: Analyse de sentiment"
+                                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+                                                    placeholder="Rechercher des tâches..."
+                                                    value={searchTask}
+                                                    onChange={(e) => setSearchTask(e.target.value)}
                                                 />
+                                                {/* Dropdown for search results */}
+                                                {searchTask && filteredTasks.length > 0 && (
+                                                    <div className=" z-10 w-full  px-4 py-2 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                                                        {filteredTasks.map((task) => (
+                                                            <div
+                                                                key={task.id}
+                                                                className="px-4 py-2 cursor-pointer hover:bg-gray-100"
+                                                                onClick={() => addTask(task)}
+                                                            >
+                                                                {task.name}
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                )}
                                             </div>
 
-                                            <div>
-                                                <button
-                                                    type="button"
-                                                    onClick={handleAddTask}
-                                                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center"
-                                                >
-                                                    <Plus className="h-4 w-4 mr-2" />
-                                                    Ajouter la tâche
-                                                </button>
-                                            </div>
+
                                         </div>
                                     </div>
                                 </div>

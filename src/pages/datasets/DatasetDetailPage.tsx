@@ -271,7 +271,7 @@ export function DatasetDetailPage() {
         });
       }
       // Navigate to checkout page using the navigate function
-      navigate(`/dataset-checkout/${dataset.id}`);
+      navigate(`/datasets/checkout/${dataset.id}`);
     }, 1500);
   };
   const formatDate = (dateString: string) => {

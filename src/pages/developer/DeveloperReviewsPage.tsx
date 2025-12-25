@@ -253,53 +253,7 @@ export function DeveloperReviewsPage() {
               Évaluations
             </h1>
           </div>
-          {/* Rating Overview */}
-          <div className="bg-white rounded-xl shadow-sm p-6 mb-6">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="flex flex-col items-center justify-center">
-                <h2 className="text-lg font-semibold text-gray-700 mb-2">
-                  Note moyenne
-                </h2>
-                <div className="flex items-center">
-                  <span className="text-4xl font-bold text-gray-900">
-                    {averageRating}
-                  </span>
-                  <div className="ml-2">
-                    <div className="flex">
-                      {[1, 2, 3, 4, 5].map(star => <Star key={star} className={`h-5 w-5 ${star <= Math.round(averageRating) ? 'text-yellow-400 fill-current' : 'text-gray-300'}`} />)}
-                    </div>
-                    <p className="text-sm text-gray-500">
-                      {reviews.length} évaluations
-                    </p>
-                  </div>
-                </div>
-              </div>
-              <div className="col-span-2">
-                <h2 className="text-lg font-semibold text-gray-700 mb-4">
-                  Distribution des notes
-                </h2>
-                <div className="space-y-2">
-                  {[5, 4, 3, 2, 1].map(rating => <div key={rating} className="flex items-center">
-                    <div className="flex items-center w-16">
-                      <span className="text-sm font-medium text-gray-700">
-                        {rating}
-                      </span>
-                      <Star className="h-4 w-4 text-yellow-400 fill-current ml-1" />
-                    </div>
-                    <div className="flex-1 h-4 mx-2 bg-gray-200 rounded-full overflow-hidden">
-                      <div className="h-full bg-yellow-400" style={{
-                        width: `${calculateRatingPercentage(rating)}%`
-                      }}></div>
-                    </div>
-                    <span className="text-sm text-gray-500 w-16 text-right">
-                      {ratingStats[rating]} (
-                      {Math.round(calculateRatingPercentage(rating))}%)
-                    </span>
-                  </div>)}
-                </div>
-              </div>
-            </div>
-          </div>
+
           {/* Filters and Search */}
           <div className="bg-white rounded-xl shadow-sm p-4 mb-6">
             <div className="flex flex-col md:flex-row gap-4">

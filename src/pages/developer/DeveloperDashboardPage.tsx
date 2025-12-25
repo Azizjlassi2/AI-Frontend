@@ -11,7 +11,11 @@ import { DeveloperRecentReviewsWidget } from '../../components/developer-dashboa
 import { DeveloperActivityFeed } from '../../components/developer-dashboard/DeveloperActivityFeed';
 import { useAuth } from '../../context/AuthContext';
 import { DeveloperAccount } from '../../types/auth';
+
+
+
 interface DeveloperStats {
+
     totalModels: number;
     totalDatasets: number;
     totalUsers: number;
@@ -54,12 +58,23 @@ export function DeveloperDashboardPage() {
     const [activeTab, setActiveTab] = useState('overview');
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    const [stats, setStats] = useState<DeveloperStats | null>(null);
     const [activities, setActivities] = useState<Activity[]>([]);
     const [reviews, setReviews] = useState<Review[]>([]);
     const [dateRange, setDateRange] = useState<'7d' | '30d' | '90d' | 'all'>('30d');
     const { username, account } = useAuth()
     const developer_account = account as DeveloperAccount;
+
+    const [stats, setStats] = useState<DeveloperStats>({
+        totalModels: developer_account?.models?.length || 0,
+        totalDatasets: developer_account?.datasets?.length || 0,
+        totalUsers: 0,
+        totalRevenue: 0,
+        currency: 'TND',
+        modelUsage: 0,
+        modelUsageTrend: 0,
+        datasetDownloads: 0,
+        datasetDownloadsTrend: 0
+    });
 
 
     useEffect(() => {
@@ -68,18 +83,7 @@ export function DeveloperDashboardPage() {
             try {
                 // In a real app, this would be an API call
                 await new Promise(resolve => setTimeout(resolve, 800));
-                // Mock data
-                const mockStats: DeveloperStats = {
-                    totalModels: 12,
-                    totalDatasets: 8,
-                    totalUsers: 3245,
-                    totalRevenue: 28750.45,
-                    currency: 'TND',
-                    modelUsage: 125780,
-                    modelUsageTrend: 12.5,
-                    datasetDownloads: 4230,
-                    datasetDownloadsTrend: -3.2
-                };
+
                 const mockActivities: Activity[] = [{
                     id: 1,
                     type: 'MODEL_USAGE',
@@ -168,7 +172,7 @@ export function DeveloperDashboardPage() {
                     comment: "Performance impressionnante sur les tâches de classification. L'intégration API est simple et bien documentée.",
                     date: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
                 }];
-                setStats(mockStats);
+
                 setActivities(mockActivities);
                 setReviews(mockReviews);
             } catch (error) {
@@ -180,6 +184,7 @@ export function DeveloperDashboardPage() {
         };
         fetchDashboardData();
     }, [dateRange]);
+
     const handleTabChange = (tab: string) => {
         setActiveTab(tab);
     };
@@ -210,17 +215,27 @@ export function DeveloperDashboardPage() {
             <main className="flex-1 p-6">
                 <div className="container mx-auto max-w-7xl">
                     {!developer_account?.docker_username && !developer_account?.docker_pat && (
-                        <div className="mb-6 bg-red-50 border border-red-200 rounded-lg p-4 flex items-center">
-                            <AlertTriangle className="h-5 w-5 text-red-500 mr-3" />
-                            <p className="text-red-700">Configure your Docker Hub integration to start sharing models , datasets and more with the comunity . You can set it up in your Settings ! </p>
+                        <div
+                            role="alert"
+                            aria-live="polite"
+                            className="mb-6 bg-red-50 border border-red-200 rounded-lg p-4 flex items-start gap-3 shadow-sm"
+                        >
+                            <AlertTriangle className="h-5 w-5 text-red-500 flex-shrink-0 mt-0.5" />
+                            <div className="flex-1">
+                                <p className="text-red-700 text-sm leading-5">
+                                    Pour commencer à partager vos modèles, datasets et autres ressources avec la communauté, configurez votre intégration Docker Hub. Vous pouvez le faire dans vos{' '}
+                                    <Link
+                                        to="/developer/settings"
+                                        className="font-medium text-red-600 hover:text-red-700 underline"
+                                    >
+                                        Paramètres
+                                    </Link>
+                                    .
+                                </p>
+                            </div>
                         </div>
                     )}
-                    {!developer_account?.phone_number && (
-                        <div className="mb-6 bg-red-50 border border-red-200 rounded-lg p-4 flex items-center">
-                            <AlertTriangle className="h-5 w-5 text-red-500 mr-3" />
-                            <p className="text-red-700">Configure your phone number so you can send / receive money . You can set it up in your Settings ! </p>
-                        </div>
-                    )}
+
                     <div className="mb-6 flex flex-col md:flex-row md:items-center md:justify-between">
                         <h1 className="text-2xl font-bold text-gray-900 mb-4 md:mb-0">
                             Tableau de bord développeur

@@ -41,7 +41,7 @@ export function ClientApiKeysManagementPage() {
 
                 // Generate mock API keys based on subscriptions
                 const mockApiKeys: ApiKey[] = data.map((key: any) => {
-                    // Generate a random API key
+
 
                     return {
                         id: `key_${key.id}`,

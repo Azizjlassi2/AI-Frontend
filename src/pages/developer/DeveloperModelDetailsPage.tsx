@@ -741,9 +741,8 @@ export function DeveloperModelDetailPage() {
                                                                 <div className="text-sm text-gray-900">
                                                                     {plan.billingPeriod === BillingPeriod.MONTHLY
                                                                         ? 'Mensuelle'
-                                                                        : plan.billingPeriod === BillingPeriod.ANNUAL
-                                                                            ? 'Annuelle'
-                                                                            : 'Pay-as-you-go'}
+                                                                        : 'Annuelle'
+                                                                    }
                                                                 </div>
                                                                 {plan.apiCallsLimit && (
                                                                     <div className="text-sm text-gray-500">

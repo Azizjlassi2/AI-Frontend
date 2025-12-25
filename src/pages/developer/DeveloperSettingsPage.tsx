@@ -1,17 +1,16 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { User, Lock, Bell, Globe, CreditCard, Key, Save, Check, AlertTriangle, Phone, Home, Settings as SettingsIcon, Boxes, Shield, EyeOff, Eye, FileText, Wallet } from 'lucide-react';
+import { User, Lock, Bell, Globe, CreditCard, Key, Save, Check, AlertTriangle, Phone, Home, Settings as SettingsIcon, Boxes, Shield, EyeOff, Eye, FileText, Wallet, Mail, Building2 } from 'lucide-react';
+
 import { DeveloperDashboardHeader } from '../../components/developer-dashboard/DeveloperDashboardHeader';
 import { DeveloperDashboardSidebar } from '../../components/developer-dashboard/DeveloperDashboardSidebar';
 import axios from 'axios';
 import { useAuth } from '../../context/AuthContext';
 import { DeveloperAccount } from '../../types/auth';
+import React from 'react';
+import { PaymentMethod, Task } from '../../types/shared';
 
-// Interfaces based on API response
-interface Task {
-    id: number;
-    name: string;
-}
+
 
 interface ModelStats {
     used: number;
@@ -75,6 +74,7 @@ interface DeveloperSettings {
         minPayoutAmount: number;
         payoutDay: number;
     };
+    paymentMethods?: PaymentMethod[];
 }
 
 export function DeveloperSettingsPage() {
@@ -135,8 +135,25 @@ export function DeveloperSettingsPage() {
             autoPayout: true,
             minPayoutAmount: 500,
             payoutDay: 15
-        }
+        },
+        paymentMethods: []
     });
+    useEffect(() => {
+        const loadFromStorage = () => {
+            try {
+                const stored = localStorage.getItem('developerSettings');
+                if (stored) {
+                    const parsed = JSON.parse(stored);
+                    setSettings(parsed);
+                    setPaymentMethods(parsed.paymentMethods || []);
+                }
+            } catch (err) {
+                console.error('Erreur lors du chargement des paramètres:', err);
+                setError('Erreur lors du chargement des paramètres depuis le stockage local.');
+            }
+        };
+        loadFromStorage();
+    }, []);
 
     // Password change fields
     const [passwordData, setPasswordData] = useState({
@@ -145,25 +162,32 @@ export function DeveloperSettingsPage() {
         confirmPassword: ''
     });
 
-    // Payment methods
-    const [paymentMethods, setPaymentMethods] = useState([{
-        id: 'pm_1',
-        type: 'bank_account',
-        details: {
-            bankName: 'Banque Nationale de Tunisie',
-            accountNumber: '•••• 5678'
-        },
-        isDefault: true
-    }, {
-        id: 'pm_2',
-        type: 'paypal',
-        details: {
-            email: 'ai.lab.tunisia@example.com'
-        },
-        isDefault: false
-    }]);
+    // Update the state to match the new types (get the informations from settings.paymentMethods) 
 
+    const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>(settings.paymentMethods || []);
 
+    const handleSetDefaultPaymentMethod = (id: string) => {
+        const updated = paymentMethods.map(method =>
+            method.id === id
+                ? { ...method, isDefault: true }
+                : { ...method, isDefault: false }
+        );
+        setPaymentMethods(updated);
+        setSettings(prev => ({ ...prev, paymentMethods: updated }));
+    };
+
+    const handleRemovePaymentMethod = (id: string) => {
+        if (confirm('Êtes-vous sûr de vouloir supprimer cette méthode de paiement ?')) {
+            const updated = paymentMethods
+                .filter(method => method.id !== id)
+                .map((method, index) => ({
+                    ...method,
+                    isDefault: index === 0
+                }));
+            setPaymentMethods(updated);
+            setSettings(prev => ({ ...prev, paymentMethods: updated }));
+        }
+    };
 
     const handleTabChange = (tab: string) => setActiveTab(tab);
     const handleSettingsTabChange = (tab: string) => setSettingsTab(tab);
@@ -173,10 +197,11 @@ export function DeveloperSettingsPage() {
         setError(null);
         setTimeout(() => {
             try {
+                // MODIFICATION: Enregistre settings (qui inclut maintenant paymentMethods mis à jour)
                 localStorage.setItem('developerSettings', JSON.stringify(settings));
                 setSaveSuccess(true);
                 setTimeout(() => setSaveSuccess(false), 3000);
-                navigate("/developer/profile")
+                // Optionnel: navigate("/developer/profile") si besoin
             } catch (err) {
                 setError("Une erreur est survenue lors de l'enregistrement des paramètres");
             } finally {
@@ -403,12 +428,7 @@ export function DeveloperSettingsPage() {
                                 <p className="text-red-700">Configure your Docker Hub integration to start sharing models , datasets and more with the comunity . You can set it up in your Settings ! </p>
                             </div>
                         )}
-                        {!developer_account?.phone_number && (
-                            <div className="mb-6 bg-red-50 border border-red-200 rounded-lg p-4 flex items-center">
-                                <AlertTriangle className="h-5 w-5 text-red-500 mr-3" />
-                                <p className="text-red-700">Configure your phone number so you can send / receive money . You can set it up in your Settings ! </p>
-                            </div>
-                        )}
+
                         {saveSuccess && (
                             <div className="mb-6 bg-green-50 border border-green-200 rounded-lg p-4 flex items-center">
                                 <Check className="h-5 w-5 text-green-500 mr-3" />
@@ -429,7 +449,7 @@ export function DeveloperSettingsPage() {
                                 <div className="w-full md:w-64 bg-gray-50 p-6 border-r border-gray-200">
                                     <h2 className="text-lg font-semibold text-gray-900 mb-6">Paramètres</h2>
                                     <nav className="space-y-1">
-                                        {['profile', 'security', 'notifications', 'preferences', 'billing', 'api', 'docker', 'resources'].map((tab) => (
+                                        {['profile', 'security', 'notifications', 'billing', 'docker'].map((tab) => (
                                             <button
                                                 key={tab}
                                                 onClick={() => handleSettingsTabChange(tab)}
@@ -441,20 +461,18 @@ export function DeveloperSettingsPage() {
                                                 {tab === 'profile' && <User className="h-5 w-5 mr-3" />}
                                                 {tab === 'security' && <Lock className="h-5 w-5 mr-3" />}
                                                 {tab === 'notifications' && <Bell className="h-5 w-5 mr-3" />}
-                                                {tab === 'preferences' && <Globe className="h-5 w-5 mr-3" />}
                                                 {tab === 'billing' && <CreditCard className="h-5 w-5 mr-3" />}
                                                 {tab === 'docker' && <Boxes className="h-5 w-5 mr-3" />}
-                                                {tab === 'api' && <Key className="h-5 w-5 mr-3" />}
-                                                {tab === 'resources' && <SettingsIcon className="h-5 w-5 mr-3" />}
+
+
 
                                                 {tab === 'profile' && 'Profil'}
                                                 {tab === 'security' && 'Sécurité'}
                                                 {tab === 'notifications' && 'Notifications'}
-                                                {tab === 'preferences' && 'Préférences'}
                                                 {tab === 'billing' && 'Paiements'}
                                                 {tab === 'docker' && 'Docker Hub'}
-                                                {tab === 'api' && 'API'}
-                                                {tab === 'resources' && 'Ressources'}
+
+
                                             </button>
                                         ))}
                                     </nav>
@@ -748,7 +766,155 @@ export function DeveloperSettingsPage() {
                                     </div>
 
                                     )}
-
+                                    {/* Notification Settings */}
+                                    {settingsTab === 'notifications' && <div>
+                                        <h2 className="text-xl font-bold text-gray-900 mb-6">
+                                            Notifications
+                                        </h2>
+                                        <div className="bg-gray-50 p-4 rounded-lg mb-6">
+                                            <h3 className="text-lg font-medium text-gray-900 mb-4">
+                                                Canaux de notification
+                                            </h3>
+                                            <div className="space-y-4">
+                                                <div className="flex items-start">
+                                                    <div className="flex items-center h-5">
+                                                        <input id="email-notifications" type="checkbox" className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500" checked={settings.notifications.email} onChange={e => setSettings({
+                                                            ...settings,
+                                                            notifications: {
+                                                                ...settings.notifications,
+                                                                email: e.target.checked
+                                                            }
+                                                        })} />
+                                                    </div>
+                                                    <div className="ml-3 text-sm">
+                                                        <label htmlFor="email-notifications" className="font-medium text-gray-700">
+                                                            Notifications par email
+                                                        </label>
+                                                        <p className="text-gray-500">
+                                                            Recevez des notifications par email pour les
+                                                            activités importantes.
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                                <div className="flex items-start">
+                                                    <div className="flex items-center h-5">
+                                                        <input id="push-notifications" type="checkbox" className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500" checked={settings.notifications.push} onChange={e => setSettings({
+                                                            ...settings,
+                                                            notifications: {
+                                                                ...settings.notifications,
+                                                                push: e.target.checked
+                                                            }
+                                                        })} />
+                                                    </div>
+                                                    <div className="ml-3 text-sm">
+                                                        <label htmlFor="push-notifications" className="font-medium text-gray-700">
+                                                            Notifications push
+                                                        </label>
+                                                        <p className="text-gray-500">
+                                                            Recevez des notifications push dans votre
+                                                            navigateur.
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div className="bg-gray-50 p-4 rounded-lg mb-6">
+                                            <h3 className="text-lg font-medium text-gray-900 mb-4">
+                                                Types de notification
+                                            </h3>
+                                            <div className="space-y-4">
+                                                <div className="flex items-start">
+                                                    <div className="flex items-center h-5">
+                                                        <input id="subscribers-notifications" type="checkbox" className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500" checked={settings.notifications.subscribers} onChange={e => setSettings({
+                                                            ...settings,
+                                                            notifications: {
+                                                                ...settings.notifications,
+                                                                subscribers: e.target.checked
+                                                            }
+                                                        })} />
+                                                    </div>
+                                                    <div className="ml-3 text-sm">
+                                                        <label htmlFor="subscribers-notifications" className="font-medium text-gray-700">
+                                                            Abonnés
+                                                        </label>
+                                                        <p className="text-gray-500">
+                                                            Notifications concernant les nouveaux abonnés et
+                                                            les renouvellements.
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                                <div className="flex items-start">
+                                                    <div className="flex items-center h-5">
+                                                        <input id="revenue-notifications" type="checkbox" className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500" checked={settings.notifications.revenue} onChange={e => setSettings({
+                                                            ...settings,
+                                                            notifications: {
+                                                                ...settings.notifications,
+                                                                revenue: e.target.checked
+                                                            }
+                                                        })} />
+                                                    </div>
+                                                    <div className="ml-3 text-sm">
+                                                        <label htmlFor="revenue-notifications" className="font-medium text-gray-700">
+                                                            Revenus
+                                                        </label>
+                                                        <p className="text-gray-500">
+                                                            Notifications concernant les paiements reçus et
+                                                            les versements.
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                                <div className="flex items-start">
+                                                    <div className="flex items-center h-5">
+                                                        <input id="ratings-notifications" type="checkbox" className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500" checked={settings.notifications.ratings} onChange={e => setSettings({
+                                                            ...settings,
+                                                            notifications: {
+                                                                ...settings.notifications,
+                                                                ratings: e.target.checked
+                                                            }
+                                                        })} />
+                                                    </div>
+                                                    <div className="ml-3 text-sm">
+                                                        <label htmlFor="ratings-notifications" className="font-medium text-gray-700">
+                                                            Évaluations
+                                                        </label>
+                                                        <p className="text-gray-500">
+                                                            Notifications concernant les nouvelles
+                                                            évaluations et commentaires.
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                                <div className="flex items-start">
+                                                    <div className="flex items-center h-5">
+                                                        <input id="marketing-notifications" type="checkbox" className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500" checked={settings.notifications.marketing} onChange={e => setSettings({
+                                                            ...settings,
+                                                            notifications: {
+                                                                ...settings.notifications,
+                                                                marketing: e.target.checked
+                                                            }
+                                                        })} />
+                                                    </div>
+                                                    <div className="ml-3 text-sm">
+                                                        <label htmlFor="marketing-notifications" className="font-medium text-gray-700">
+                                                            Marketing
+                                                        </label>
+                                                        <p className="text-gray-500">
+                                                            Nouvelles fonctionnalités, mises à jour et
+                                                            offres spéciales.
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div className="flex justify-end">
+                                            <button type="button" className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500" onClick={handleSaveSettings} disabled={loading}>
+                                                {loading ? <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                                </svg> : <Save className="h-4 w-4 mr-2" />}
+                                                Enregistrer
+                                            </button>
+                                        </div>
+                                    </div>}
                                     {/* Security Settings */}
                                     {settingsTab === 'security' && (
                                         <SecuritySettings
@@ -761,81 +927,132 @@ export function DeveloperSettingsPage() {
                                             loading={loading}
                                         />
                                     )}
-                                    {/* Billing Settings */}
                                     {settingsTab === 'billing' && (
                                         <div>
                                             <h2 className="text-xl font-bold text-gray-900 mb-6">
-                                                Facturation
+                                                Paiements
                                             </h2>
-                                            {/* Konnect.network Wallet ID Section */}
+
+                                            {/* Payment Methods Section */}
+                                            <div className="bg-gray-50 p-4 rounded-lg mb-6">
+                                                <div className="flex items-center justify-between mb-4">
+                                                    <h3 className="text-lg font-medium text-gray-900">
+                                                        Méthodes de paiement
+                                                    </h3>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => navigate('/developer/add-payment-method')}
+                                                        className="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
+                                                    >
+                                                        <CreditCard className="h-4 w-4 mr-2" />
+                                                        Ajouter une méthode
+                                                    </button>
+                                                </div>
+                                                {paymentMethods.length === 0 ? (
+                                                    <div className="text-center py-8">
+                                                        <CreditCard className="mx-auto h-12 w-12 text-gray-400 mb-4" />
+                                                        <p className="text-gray-500 mb-4">
+                                                            Aucune méthode de paiement enregistrée
+                                                        </p>
+                                                        <p className="text-sm text-gray-500">
+                                                            Ajoutez votre première méthode de versement tunisienne pour recevoir vos revenus.
+                                                        </p>
+                                                    </div>
+                                                ) : (
+                                                    <div className="space-y-4">
+
+                                                        {paymentMethods.map((method: PaymentMethod) => {
+                                                            let displayName = '';
+                                                            let displayDetails = '';
+                                                            let icon = CreditCard;
+
+                                                            switch (method.type) {
+                                                                case 'bank_transfer':
+                                                                    displayName = 'Virement Bancaire';
+                                                                    displayDetails = `${method.details.bankName} - **** ${method.details.accountNumber.slice(-4)}`;
+                                                                    icon = Building2;
+                                                                    break;
+                                                                case 'd17_card':
+                                                                    displayName = 'Carte D17';
+                                                                    displayDetails = `**** **** **** ${method.details.cardNumber.slice(-4)}`;
+                                                                    icon = CreditCard;
+                                                                    break;
+                                                                case 'postal_check':
+                                                                    displayName = 'Chèque Postal (CCP)';
+                                                                    displayDetails = `CCP ${method.details.ccpNumber.slice(0, 3)}****`;
+                                                                    icon = Mail;
+                                                                    break;
+                                                                default:
+                                                                    displayName = 'Méthode inconnue';
+                                                                    displayDetails = '';
+                                                            }
+
+                                                            return (
+                                                                <div key={method.id} className="flex items-center justify-between p-4 border border-gray-200 rounded-lg bg-white">
+                                                                    <div className="flex items-center">
+                                                                        <div className="mr-4">
+                                                                            {React.createElement(icon, { className: 'h-8 w-8 text-gray-400' })}
+                                                                        </div>
+                                                                        <div>
+                                                                            <p className="font-medium text-gray-900">{displayName}</p>
+                                                                            <p className="text-sm text-gray-500">{displayDetails}</p>
+                                                                        </div>
+                                                                    </div>
+                                                                    <div className="flex items-center space-x-2">
+                                                                        {method.isDefault ? (
+                                                                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                                                                Par défaut
+                                                                            </span>
+                                                                        ) : (
+                                                                            <button
+                                                                                type="button"
+                                                                                className="text-sm text-blue-600 hover:text-blue-800"
+                                                                                onClick={() => handleSetDefaultPaymentMethod(method.id)}
+                                                                            >
+                                                                                Définir par défaut
+                                                                            </button>
+                                                                        )}
+                                                                        <button
+                                                                            type="button"
+                                                                            className="text-sm text-red-600 hover:text-red-800"
+                                                                            onClick={() => handleRemovePaymentMethod(method.id)}
+                                                                        >
+                                                                            Supprimer
+                                                                        </button>
+                                                                    </div>
+                                                                </div>
+                                                            );
+                                                        })}
+                                                    </div>
+                                                )}
+                                            </div>
+
+                                            {/* Billing History Section */}
                                             <div className="bg-gray-50 p-4 rounded-lg mb-6">
                                                 <h3 className="text-lg font-medium text-gray-900 mb-4">
-                                                    Portefeuille Konnect.network
+                                                    Historique de facturation
                                                 </h3>
-                                                <div className="bg-blue-50 border-l-4 border-blue-500 p-4 mb-4">
-                                                    <div className="flex">
-                                                        <div className="flex-shrink-0">
-                                                            <AlertTriangle className="h-5 w-5 text-blue-500" />
-                                                        </div>
-                                                        <div className="ml-3">
-                                                            <p className="text-sm text-blue-700">
-                                                                Konnect.network est actuellement la seule méthode de
-                                                                paiement disponible sur la plateforme.
-                                                            </p>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <div className="mb-4">
-                                                    <label
-                                                        htmlFor="konnect-wallet-id"
-                                                        className="block text-sm font-medium text-gray-700 mb-1"
-                                                    >
-                                                        ID de votre portefeuille Konnect.network
-                                                    </label>
-                                                    <div className="flex">
-                                                        <span className="inline-flex items-center px-3 py-2 rounded-l-md border border-r-0 border-gray-300 bg-gray-50 text-gray-500">
-                                                            <Wallet className="h-4 w-4" />
-                                                        </span>
-                                                        <input
-                                                            type="text"
-                                                            id="konnect-wallet-id"
-                                                            className="w-full px-3 py-2 border border-gray-300 rounded-r-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-900"
-                                                            value={konnectWalletId}
-                                                            onChange={(e) => setKonnectWalletId(e.target.value)}
-                                                            placeholder="Entrez votre ID de portefeuille Konnect.network"
-                                                        />
-                                                    </div>
-                                                    <p className="mt-1 text-sm text-gray-500">
-                                                        Cet identifiant est nécessaire pour recevoir vos
-                                                        paiements sur la plateforme.
-                                                    </p>
-                                                </div>
+                                                <Link
+                                                    to="/developer/invoices"
+                                                    className="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
+                                                >
+                                                    <FileText className="h-4 w-4 mr-2" />
+                                                    Voir toutes les factures
+                                                </Link>
+                                            </div>
+
+                                            {/* Save Button (if needed for other settings) */}
+                                            <div className="flex justify-end">
                                                 <button
                                                     type="button"
                                                     className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                                                    onClick={handleSaveProfile}
+                                                    onClick={handleSaveSettings}
                                                     disabled={loading}
                                                 >
                                                     {loading ? (
-                                                        <svg
-                                                            className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
-                                                            xmlns="http://www.w3.org/2000/svg"
-                                                            fill="none"
-                                                            viewBox="0 0 24 24"
-                                                        >
-                                                            <circle
-                                                                className="opacity-25"
-                                                                cx="12"
-                                                                cy="12"
-                                                                r="10"
-                                                                stroke="currentColor"
-                                                                strokeWidth="4"
-                                                            ></circle>
-                                                            <path
-                                                                className="opacity-75"
-                                                                fill="currentColor"
-                                                                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                                                            ></path>
+                                                        <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                                                         </svg>
                                                     ) : (
                                                         <Save className="h-4 w-4 mr-2" />
@@ -843,21 +1060,8 @@ export function DeveloperSettingsPage() {
                                                     Enregistrer
                                                 </button>
                                             </div>
-                                            <div className="bg-gray-50 p-4 rounded-lg mb-6">
-                                                <h3 className="text-lg font-medium text-gray-900 mb-4">
-                                                    Historique de facturation
-                                                </h3>
-                                                <Link
-                                                    to="/user/invoices"
-                                                    className="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
-                                                >
-                                                    <FileText className="h-4 w-4 mr-2" />
-                                                    Voir toutes les factures
-                                                </Link>
-                                            </div>
                                         </div>
                                     )}
-
                                     {/* Other settings sections (Notifications, Preferences, etc.) */}
                                     {/* They would follow a similar pattern to the profile section */}
                                     {/* For brevity, I've omitted them here but would implement similarly */}

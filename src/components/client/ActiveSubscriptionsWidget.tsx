@@ -25,8 +25,7 @@ export function ActiveSubscriptionsWidget({
         return <Calendar className="h-5 w-5 text-blue-600" />;
       case BillingPeriod.ANNUAL:
         return <Calendar className="h-5 w-5 text-green-600" />;
-      case BillingPeriod.PAY_AS_YOU_GO:
-        return <Zap className="h-5 w-5 text-purple-600" />;
+
       default:
         return <CreditCard className="h-5 w-5 text-blue-600" />;
     }
@@ -38,8 +37,7 @@ export function ActiveSubscriptionsWidget({
         return 'Mensuel';
       case BillingPeriod.ANNUAL:
         return 'Annuel';
-      case BillingPeriod.PAY_AS_YOU_GO:
-        return 'Pay-as-you-go';
+
       default:
         return '';
     }
@@ -73,21 +71,23 @@ export function ActiveSubscriptionsWidget({
                 {subscription.modelName}
               </h3>
               <p className="text-sm text-gray-500">
-                {subscription.planName} (
-                {getBillingPeriodText(subscription.billingPeriod)})
+                {subscription.planName}
+                {getBillingPeriodText(subscription.billingPeriod)}
               </p>
-              <p className="text-sm text-gray-500 mt-1">
-                Prochain paiement:{' '}
-                {formatDate(subscription.nextBillingDate)}
-              </p>
+              {subscription.nextBillingDate && (
+                <p className="text-sm text-gray-500 mt-1">
+                  Prochain paiement:{' '}
+                  {formatDate(subscription.nextBillingDate)}
+                </p>
+              )}
             </div>
           </div>
           <div className="text-right">
             <p className="font-medium text-gray-900">
-              {subscription.billingPeriod === BillingPeriod.PAY_AS_YOU_GO ? `${subscription.price} ${subscription.currency}/appel` : `${subscription.price} ${subscription.currency}`}
+              {`${subscription.price} ${subscription.currency}`}
             </p>
             <p className="text-sm text-gray-500">
-              {subscription.billingPeriod !== BillingPeriod.PAY_AS_YOU_GO && (subscription.billingPeriod === BillingPeriod.MONTHLY ? 'par mois' : 'par an')}
+              {(subscription.billingPeriod === BillingPeriod.MONTHLY ? 'par mois' : 'par an')}
             </p>
           </div>
         </div>

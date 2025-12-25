@@ -13,6 +13,9 @@ import { Key } from 'lucide-react';
 import { Database } from 'lucide-react';
 
 import { BillingPeriod, SubscriptionStatus, Invoice, ActivityItem, Notification, Subscription } from '../../types/shared';
+import axios from 'axios';
+import { useAuth } from '../../context/AuthContext';
+import { sub } from 'framer-motion/client';
 
 export interface UserDashboardData {
     user: {
@@ -38,70 +41,45 @@ export function ClientDashboardPage() {
     const [error, setError] = useState<string | null>(null);
     const [activeTab, setActiveTab] = useState<string>('overview');
     const navigate = useNavigate();
+    const { token } = useAuth();
+
     useEffect(() => {
         const fetchDashboardData = async () => {
             setIsLoading(true);
             try {
-                // In a real app, this would be an API call
-                await new Promise(resolve => setTimeout(resolve, 800));
-                // Mock data
-                const mockSubscriptions: Subscription[] = JSON.parse(localStorage.getItem('userSubscriptions') || '[]');
-                // If no subscriptions exist in localStorage, create mock data
-                const subscriptions = mockSubscriptions.length > 0 ? mockSubscriptions : [{
-                    id: 123456,
-                    modelId: 1,
-                    modelName: 'ArabicBERT',
-                    planId: 2,
-                    planName: 'Plan Standard',
-                    startDate: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
-                    price: 49.99,
-                    currency: 'TND',
-                    billingPeriod: BillingPeriod.MONTHLY,
-                    nextBillingDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
-                    status: SubscriptionStatus.ACTIVE,
-                    usageData: {
-                        apiCallsUsed: 23456,
-                        apiCallsLimit: 50000,
-                        lastUsed: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString()
-                    }
-                }, {
-                    id: 123457,
-                    modelId: 2,
-                    modelName: 'TunBERT',
-                    planId: 4,
-                    planName: 'Pay-As-You-Go',
-                    startDate: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000).toISOString(),
-                    price: 0.001,
-                    currency: 'TND',
-                    billingPeriod: BillingPeriod.PAY_AS_YOU_GO,
-                    nextBillingDate: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000).toISOString(),
-                    status: SubscriptionStatus.ACTIVE,
-                    usageData: {
-                        apiCallsUsed: 3245,
-                        lastUsed: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString()
-                    }
-                }, {
-                    id: 123458,
-                    modelId: 3,
-                    modelName: 'FrenchNLP',
-                    planId: 3,
-                    planName: 'Plan Pro',
-                    startDate: new Date(Date.now() - 120 * 24 * 60 * 60 * 1000).toISOString(),
-                    price: 499.99,
-                    currency: 'TND',
-                    billingPeriod: BillingPeriod.ANNUAL,
-                    nextBillingDate: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
-                    status: SubscriptionStatus.EXPIRED,
-                    usageData: {
-                        apiCallsUsed: 950000,
-                        apiCallsLimit: 1000000,
-                        lastUsed: new Date(Date.now() - 45 * 24 * 60 * 60 * 1000).toISOString()
-                    }
-                }];
-                // Store subscriptions in localStorage if they don't exist
-                if (mockSubscriptions.length === 0) {
-                    localStorage.setItem('userSubscriptions', JSON.stringify(subscriptions));
-                }
+
+                const response = await axios.get(`${import.meta.env.VITE_BACKEND_HOST}/api/v1/subscriptions`, {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                        "Content-Type": "application/json",
+                    },
+                    withCredentials: true,
+                });
+                console.log('Subscriptions response:', response.data.data);
+                const subdata = response.data.data;
+
+
+                // map backend data vers ton interface Subscription
+                const subscriptions: Subscription[] = subdata.map((item: any) => ({
+                    id: item.id,
+                    modelId: item.plan?.model?.id,
+                    modelName: item.plan?.model?.name,
+                    planId: item.plan?.id,
+                    planName: item.plan?.name,
+                    startDate: item.startDate,
+                    price: item.plan?.price,
+                    currency: item.plan?.currency,
+                    billingPeriod: (item.plan?.billingPeriod as BillingPeriod),
+                    nextBillingDate: item.nextBillingDate || '',
+                    status: item.status ? (item.status as SubscriptionStatus) : SubscriptionStatus.PENDING,
+                    usageData: item.apiCallsUsed || item.usageData
+                        ? {
+                            apiCallsUsed: item.usageData?.apiCallsUsed ?? item.apiCallsUsed ?? 0,
+                            apiCallsLimit: item.plan?.apiCallsLimit ?? item.usageData?.apiCallsLimit,
+                            lastUsed: item.usageData?.lastUsed ?? undefined,
+                        }
+                        : undefined,
+                }));
                 // Create mock invoices
                 const invoices: Invoice[] = [{
                     id: 'INV-2024-0001',

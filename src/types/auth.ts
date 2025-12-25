@@ -1,6 +1,10 @@
 export interface AccountBase {
   id: number;
 }
+interface Developer {
+  id: number;
+  username: string;
+}
 
 interface Task {
   id: number;
@@ -12,11 +16,6 @@ interface Stats {
   discussions: number;
 }
 
-interface Developer {
-  id: number;
-  username: string;
-}
-
 interface Model {
   id: number;
   name: string;
@@ -24,6 +23,14 @@ interface Model {
   developer: Developer;
   tasks: Task[];
   stats: Stats;
+  createdAt: string;
+}
+interface Dataset {
+  downloads: number;
+  id: number;
+  name: string;
+  description: string;
+  developer: Developer;
   createdAt: string;
 }
 
@@ -37,6 +44,7 @@ export interface DeveloperAccount extends AccountBase {
   docker_username?: string;
   docker_pat?: string;
   models?: Model[];
+  datasets?: Dataset[];
   favoriteModels: Model[];
 }
 

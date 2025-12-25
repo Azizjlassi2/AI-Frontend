@@ -1,13 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Users, Search, Filter, Download, MoreVertical, Mail, BarChart2, Calendar, Clock, CheckCircle, XCircle, AlertTriangle, ChevronDown, Database, ArrowUpRight, ArrowDownRight, Star, DollarSign } from 'lucide-react';
+import { Users, Search, Filter, Download, MoreVertical, Mail, BarChart2, Calendar, Clock, CheckCircle, XCircle, AlertTriangle, ChevronDown, Database, ArrowUpRight, ArrowDownRight, Star, DollarSign, Bot } from 'lucide-react';
 import { DeveloperDashboardHeader } from '../../components/developer-dashboard/DeveloperDashboardHeader';
 import { DeveloperDashboardSidebar } from '../../components/developer-dashboard/DeveloperDashboardSidebar';
+import { useAuth } from '../../context/AuthContext';
 enum SubscriptionStatus {
   ACTIVE = 'ACTIVE',
   CANCELED = 'CANCELED',
   EXPIRED = 'EXPIRED',
-  TRIAL = 'TRIAL',
+
 }
 enum ResourceType {
   MODEL = 'MODEL',
@@ -37,12 +38,13 @@ export function DeveloperSubscribersPage() {
   const [statusFilter, setStatusFilter] = useState<SubscriptionStatus | null>(null);
   const [typeFilter, setTypeFilter] = useState<ResourceType | null>(null);
   const [showDropdown, setShowDropdown] = useState<number | null>(null);
+  const { account } = useAuth();
   const [subscriberStats, setSubscriberStats] = useState({
     total: 0,
     active: 0,
     canceled: 0,
     expired: 0,
-    trial: 0,
+
     growthRate: 0,
     averageRevenue: 0,
     retentionRate: 0
@@ -125,21 +127,6 @@ export function DeveloperSubscribersPage() {
           usage: 1,
           country: 'Tunisie'
         }, {
-          id: 6,
-          name: 'Clinique Al Farabi',
-          email: 'tech@alfarabi.tn',
-          avatar: 'https://api.dicebear.com/7.x/initials/svg?seed=CAF',
-          subscriptionType: ResourceType.MODEL,
-          resourceId: 3,
-          resourceName: 'MedicalVision AI',
-          status: SubscriptionStatus.TRIAL,
-          startDate: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString(),
-          endDate: new Date(Date.now() + 20 * 24 * 60 * 60 * 1000).toISOString(),
-          plan: 'Trial',
-          revenue: 0,
-          usage: 2450,
-          country: 'Tunisie'
-        }, {
           id: 7,
           name: 'Startup Innovation Hub',
           email: 'contact@innovhub.tn',
@@ -176,7 +163,7 @@ export function DeveloperSubscribersPage() {
         const active = mockSubscribers.filter(s => s.status === SubscriptionStatus.ACTIVE).length;
         const canceled = mockSubscribers.filter(s => s.status === SubscriptionStatus.CANCELED).length;
         const expired = mockSubscribers.filter(s => s.status === SubscriptionStatus.EXPIRED).length;
-        const trial = mockSubscribers.filter(s => s.status === SubscriptionStatus.TRIAL).length;
+
         const totalRevenue = mockSubscribers.reduce((sum, s) => sum + s.revenue, 0);
         const averageRevenue = totalRevenue / total;
         setSubscriberStats({
@@ -184,7 +171,6 @@ export function DeveloperSubscribersPage() {
           active,
           canceled,
           expired,
-          trial,
           growthRate: 15.3,
           averageRevenue,
           retentionRate: 82.5 // Mock retention rate
@@ -245,11 +231,7 @@ export function DeveloperSubscribersPage() {
           <Clock className="h-3 w-3 mr-1" />
           Expiré
         </span>;
-      case SubscriptionStatus.TRIAL:
-        return <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-          <Calendar className="h-3 w-3 mr-1" />
-          Essai
-        </span>;
+
       default:
         return null;
     }
@@ -257,7 +239,7 @@ export function DeveloperSubscribersPage() {
   const getTypeIcon = (type: ResourceType) => {
     switch (type) {
       case ResourceType.MODEL:
-        return <div className="h-5 w-5 text-blue-600" />;
+        return <Bot className="h-5 w-5 text-blue-600" />;
       case ResourceType.DATASET:
         return <Database className="h-5 w-5 text-green-600" />;
       default:
@@ -388,7 +370,7 @@ export function DeveloperSubscribersPage() {
                       {statusFilter === SubscriptionStatus.ACTIVE && 'Actifs'}
                       {statusFilter === SubscriptionStatus.CANCELED && 'Annulés'}
                       {statusFilter === SubscriptionStatus.EXPIRED && 'Expirés'}
-                      {statusFilter === SubscriptionStatus.TRIAL && 'En essai'}
+
                     </> : 'Tous les statuts'}
                     <ChevronDown className="h-4 w-4 ml-2" />
                   </button>
@@ -399,9 +381,8 @@ export function DeveloperSubscribersPage() {
                     <button className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" onClick={() => handleStatusFilterChange(SubscriptionStatus.ACTIVE)}>
                       Actifs
                     </button>
-                    <button className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" onClick={() => handleStatusFilterChange(SubscriptionStatus.TRIAL)}>
-                      En essai
-                    </button>
+
+
                     <button className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" onClick={() => handleStatusFilterChange(SubscriptionStatus.CANCELED)}>
                       Annulés
                     </button>
@@ -471,9 +452,7 @@ export function DeveloperSubscribersPage() {
                     <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Utilisation
                     </th>
-                    <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Actions
-                    </th>
+
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
@@ -529,25 +508,7 @@ export function DeveloperSubscribersPage() {
                         {subscriber.subscriptionType === ResourceType.MODEL ? `${formatNumber(subscriber.usage)} appels` : `${formatNumber(subscriber.usage)} téléchargement${subscriber.usage > 1 ? 's' : ''}`}
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium relative">
-                      <button className="text-gray-400 hover:text-gray-600" onClick={() => toggleDropdown(subscriber.id)}>
-                        <MoreVertical className="h-5 w-5" />
-                      </button>
-                      {showDropdown === subscriber.id && <div className="absolute right-6 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-10 border border-gray-200">
-                        <button className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center">
-                          <BarChart2 className="h-4 w-4 mr-2" />
-                          Voir les statistiques
-                        </button>
-                        <button className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center">
-                          <Mail className="h-4 w-4 mr-2" />
-                          Contacter
-                        </button>
-                        {subscriber.status === SubscriptionStatus.ACTIVE && <button className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100 flex items-center">
-                          <XCircle className="h-4 w-4 mr-2" />
-                          Désactiver l'accès
-                        </button>}
-                      </div>}
-                    </td>
+
                   </tr>)}
                 </tbody>
               </table>

@@ -74,189 +74,6 @@ export function ModelsPage() {
       : <StarIcon className="h-5 w-5 text-gray-400 hover:text-blue-500" />;
   }
 
-  const MOCK_MODELS: Model[] = [
-    {
-      id: 1,
-      name: "ResNet50 Image Classifier",
-      description: "CNN pré-entraîné pour classification d’images.",
-      developer: { id: 101, username: "system" },
-      tasks: [{ id: 1, name: "Image Classification" }],
-      stats: { used: 5400, stars: 120, discussions: 18 },
-      createdAt: "2024-01-10"
-    },
-    {
-      id: 2,
-      name: "YOLOv8 Object Detector",
-      description: "Détection d’objets en temps réel.",
-      developer: { id: 101, username: "system" },
-      tasks: [{ id: 2, name: "Object Detection" }],
-      stats: { used: 8900, stars: 210, discussions: 45 },
-      createdAt: "2024-01-12"
-    },
-    {
-      id: 3,
-      name: "EfficientNet Image Classifier",
-      description: "Classification efficace et rapide d’images haute résolution.",
-      developer: { id: 102, username: "ai_dev" },
-      tasks: [{ id: 1, name: "Image Classification" }],
-      stats: { used: 4300, stars: 95, discussions: 15 },
-      createdAt: "2024-02-01"
-    },
-    {
-      id: 4,
-      name: "Mask R-CNN Segmenter",
-      description: "Segmentation d’objets dans les images.",
-      developer: { id: 103, username: "vision_pro" },
-      tasks: [{ id: 13, name: "Image Segmentation" }],
-      stats: { used: 3100, stars: 80, discussions: 9 },
-      createdAt: "2024-02-05"
-    },
-    {
-      id: 5,
-      name: "BERT Sentiment Analyzer",
-      description: "Analyse de sentiment en NLP avec BERT.",
-      developer: { id: 104, username: "nlp_guru" },
-      tasks: [{ id: 3, name: "Sentiment Analysis" }],
-      stats: { used: 7200, stars: 178, discussions: 33 },
-      createdAt: "2024-01-15"
-    },
-    {
-      id: 6,
-      name: "T5 Text Summarizer",
-      description: "Résumé automatique de documents textuels.",
-      developer: { id: 104, username: "nlp_guru" },
-      tasks: [{ id: 15, name: "Document Summarization" }],
-      stats: { used: 4600, stars: 98, discussions: 12 },
-      createdAt: "2024-01-18"
-    },
-    {
-      id: 7,
-      name: "GPT-Style Text Generator",
-      description: "Génération de texte naturel pour divers contextes.",
-      developer: { id: 105, username: "text_master" },
-      tasks: [{ id: 3, name: "Sentiment Analysis" }, { id: 15, name: "Document Summarization" }],
-      stats: { used: 6000, stars: 150, discussions: 25 },
-      createdAt: "2024-02-10"
-    },
-    {
-      id: 8,
-      name: "Whisper Speech-to-Text",
-      description: "Transcription audio multi-langues.",
-      developer: { id: 106, username: "audio_pro" },
-      tasks: [{ id: 6, name: "Speech-to-Text" }],
-      stats: { used: 12500, stars: 260, discussions: 55 },
-      createdAt: "2024-01-20"
-    },
-    {
-      id: 9,
-      name: "Tacotron Text-to-Speech",
-      description: "Synthèse vocale à partir de texte.",
-      developer: { id: 106, username: "audio_pro" },
-      tasks: [{ id: 7, name: "Text-to-Speech" }],
-      stats: { used: 8900, stars: 200, discussions: 40 },
-      createdAt: "2024-02-02"
-    },
-    {
-      id: 10,
-      name: "OpenAI Audio Classifier",
-      description: "Classification de sons et bruits divers.",
-      developer: { id: 106, username: "audio_pro" },
-      tasks: [{ id: 1, name: "Image Classification" }],
-      stats: { used: 4100, stars: 85, discussions: 10 },
-      createdAt: "2024-02-07"
-    },
-    {
-      id: 11,
-      name: "LSTM Time Series Forecaster",
-      description: "Prédiction de séries temporelles financières.",
-      developer: { id: 107, username: "time_series_expert" },
-      tasks: [{ id: 12, name: "Time Series Forecasting" }],
-      stats: { used: 3300, stars: 75, discussions: 8 },
-      createdAt: "2024-02-12"
-    },
-    {
-      id: 12,
-      name: "Prophet Forecast Model",
-      description: "Modèle de prévision pour séries temporelles multi-variées.",
-      developer: { id: 107, username: "time_series_expert" },
-      tasks: [{ id: 12, name: "Time Series Forecasting" }],
-      stats: { used: 2900, stars: 65, discussions: 7 },
-      createdAt: "2024-02-14"
-    },
-    {
-      id: 13,
-      name: "Reinforcement Learning Agent",
-      description: "Agent RL pour jeux et simulations stratégiques.",
-      developer: { id: 108, username: "agent_ai" },
-      tasks: [{ id: 14, name: "Agents" }],
-      stats: { used: 2000, stars: 55, discussions: 6 },
-      createdAt: "2024-02-18"
-    },
-    {
-      id: 14,
-      name: "Chatbot Conversational AI",
-      description: "Agent conversationnel pour service client.",
-      developer: { id: 108, username: "agent_ai" },
-      tasks: [{ id: 14, name: "Agents" }],
-      stats: { used: 5300, stars: 140, discussions: 20 },
-      createdAt: "2024-02-20"
-    },
-    {
-      id: 15,
-      name: "PoseNet Human Pose Estimation",
-      description: "Estimation des positions humaines dans les images.",
-      developer: { id: 103, username: "vision_pro" },
-      tasks: [{ id: 10, name: "Pose Estimation" }],
-      stats: { used: 2700, stars: 60, discussions: 10 },
-      createdAt: "2024-02-22"
-    },
-    {
-      id: 16,
-      name: "Facial Recognition System",
-      description: "Reconnaissance faciale pour sécurité et identification.",
-      developer: { id: 103, username: "vision_pro" },
-      tasks: [{ id: 8, name: "Face Recognition" }],
-      stats: { used: 4900, stars: 110, discussions: 22 },
-      createdAt: "2024-02-25"
-    },
-    {
-      id: 17,
-      name: "OCR Text Extractor",
-      description: "Extraction de texte depuis images et PDF.",
-      developer: { id: 102, username: "ai_dev" },
-      tasks: [{ id: 9, name: "OCR Extraction" }],
-      stats: { used: 3500, stars: 78, discussions: 14 },
-      createdAt: "2024-02-28"
-    },
-    {
-      id: 18,
-      name: "Anomaly Detection System",
-      description: "Détection d’anomalies dans les données industrielles.",
-      developer: { id: 107, username: "time_series_expert" },
-      tasks: [{ id: 11, name: "Anomaly Detection" }],
-      stats: { used: 4200, stars: 90, discussions: 17 },
-      createdAt: "2024-03-02"
-    },
-    {
-      id: 19,
-      name: "Recommendation Engine",
-      description: "Système de recommandations personnalisées pour e-commerce.",
-      developer: { id: 105, username: "text_master" },
-      tasks: [{ id: 14, name: "Agents" }],
-      stats: { used: 6100, stars: 155, discussions: 28 },
-      createdAt: "2024-03-05"
-    },
-    {
-      id: 20,
-      name: "Machine Translation Model",
-      description: "Traduction automatique multilingue (NLP).",
-      developer: { id: 104, username: "nlp_guru" },
-      tasks: [{ id: 5, name: "Machine Translation" }],
-      stats: { used: 5800, stars: 132, discussions: 24 },
-      createdAt: "2024-03-08"
-    }
-  ];
-
 
   const MOCK_TASKS: Task[] = [
     { id: 1, name: "Image Classification" },
@@ -293,8 +110,8 @@ export function ModelsPage() {
 
         setAllTasks(tasks);
       } catch (error: any) {
-        // Fallback en cas d’erreur réseau/API
-        setAllTasks(MOCK_TASKS);
+
+        //  setAllTasks(MOCK_TASKS);
 
         setError({
           message:
@@ -302,6 +119,7 @@ export function ModelsPage() {
             "Impossible de récupérer les tâches. Chargement des tâches par défaut.",
           type: "NETWORK",
         });
+
       }
     };
 
@@ -313,7 +131,6 @@ export function ModelsPage() {
   useEffect(() => {
     setIsLoading(true);
 
-    const controller = new AbortController();
 
     const params = {
       page: currentPage - 1,
@@ -325,10 +142,10 @@ export function ModelsPage() {
     axios
       .get<PaginatedResponse<Model>>(
         `${import.meta.env.VITE_BACKEND_HOST}/api/v1/models`,
-        { params, signal: controller.signal }
       )
       .then((res) => {
         const response = res.data?.data;
+        console.log("Fetched models:", response);
 
         const formattedModels = (response?.content || []).map((model) => ({
           id: model.id ?? 0,
@@ -340,14 +157,7 @@ export function ModelsPage() {
           createdAt: model.createdAt ?? "",
         }));
 
-        // === FALLBACK SI VIDE === //
-        if (formattedModels.length === 0) {
-          setModels(MOCK_MODELS);
-          setTotalPages(1);
-          setTotalElements(MOCK_MODELS.length);
-          setIsLoading(false);
-          return;
-        }
+
 
         setModels(formattedModels);
         setTotalPages(response.totalPages);
@@ -357,11 +167,6 @@ export function ModelsPage() {
       .catch((error) => {
         if (axios.isCancel(error)) return;
 
-        // === FALLBACK EN CAS D’ERREUR === //
-        setModels(MOCK_MODELS);
-        setTotalPages(1);
-        setTotalElements(MOCK_MODELS.length);
-
         setError({
           message:
             error?.response?.data?.message ||
@@ -369,10 +174,10 @@ export function ModelsPage() {
           type: "NETWORK",
         });
 
+
         setIsLoading(false);
       });
 
-    return () => controller.abort();
   }, [currentPage, itemsPerPage, selectedTasks, search, setError]);
 
   // Reset to first page when filters change

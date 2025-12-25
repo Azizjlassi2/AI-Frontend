@@ -5,6 +5,7 @@ import { DeveloperDashboardHeader } from '../../components/developer-dashboard/D
 import { DeveloperDashboardSidebar } from '../../components/developer-dashboard/DeveloperDashboardSidebar';
 import axios from 'axios';
 import { useError } from '../../context/ErrorContext';
+import { useAuth } from '../../context/AuthContext';
 enum Visibility {
   PUBLIC = 'PUBLIC',
   PRIVATE = 'PRIVATE',
@@ -32,13 +33,14 @@ export function DeveloperModelsPage() {
   const [modelToDelete, setModelToDelete] = useState<Model | null>(null)
   const { error, setError, clearError } = useError();
   const [deleteSuccess, setDeleteSuccess] = useState(false);
+  const { token } = useAuth();
 
   const fetchModels = async () => {
     setIsLoading(true)
     try {
       const response = await axios.get(`${import.meta.env.VITE_BACKEND_HOST}/api/v1/developer/models`, {
         headers: {
-          Authorization: `Bearer ${localStorage.getItem('authToken')}`,
+          Authorization: `Bearer ${token}`,
         },
       })
       const data = response.data.data;
@@ -85,7 +87,7 @@ export function DeveloperModelsPage() {
     if (modelToDelete) {
       const response = axios.delete(`${import.meta.env.VITE_BACKEND_HOST}/api/v1/developer/models/${modelToDelete.id}`, {
         headers: {
-          Authorization: `Bearer ${localStorage.getItem('authToken')}`,
+          Authorization: `Bearer ${token}`,
         },
 
       })
@@ -187,13 +189,7 @@ export function DeveloperModelsPage() {
                     onChange={handleSearchChange}
                   />
                 </div>
-                <div className="flex gap-2">
-                  <div className="relative"></div>
-                  <button className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg bg-white text-gray-700 hover:bg-gray-50">
-                    <Download className="h-5 w-5 mr-2" />
-                    Exporter
-                  </button>
-                </div>
+
               </div>
             </div>
             {/* Models Table */}
@@ -369,20 +365,7 @@ export function DeveloperModelsPage() {
                     complète, d'exemples d'utilisation et de plans tarifaires
                     adaptés pour maximiser leur adoption.
                   </p>
-                  <div className="flex flex-wrap gap-3">
-                    <Link
-                      to="/developer/documentation/best-practices"
-                      className="inline-flex items-center px-4 py-2 bg-white border border-blue-300 rounded-lg text-blue-700 hover:bg-blue-50"
-                    >
-                      Bonnes pratiques
-                    </Link>
-                    <Link
-                      to="/developer/support"
-                      className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-                    >
-                      Contacter le support
-                    </Link>
-                  </div>
+
                 </div>
               </div>
             </div>

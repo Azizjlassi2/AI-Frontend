@@ -2,27 +2,17 @@ import React, { useState, useEffect } from 'react'
 import axios from 'axios'
 import { useNavigate, useParams, Link } from 'react-router-dom'
 import {
-  Download, Globe, Calendar, Tag, Star, Share2, MessageSquare,
-  Cpu, HardDrive, Code, Server, Lock, Send, CheckCircle, CreditCard, BarChart, Database,
+  Globe, Calendar, Tag, Star, MessageSquare,
+  Cpu, HardDrive, Code, Server, Send, CheckCircle, CreditCard, BarChart,
   Telescope,
   Bot,
-  LogIn,
-  XCircle
 } from 'lucide-react'
 import { useError } from '../../context/ErrorContext'
 import { useAuth } from '../../context/AuthContext'
 import { useSuccess } from '../../context/SuccessContext'
+import { BillingPeriod, Visibility } from '../../types/shared'
 
-// ===== ENUMS & INTERFACES =====
-enum BillingPeriod {
-  MONTHLY = 'MONTHLY',
-  ANNUAL = 'ANNUAL',
-  WEEKLY = 'WEEKLY',
-}
-enum Visibility {
-  PUBLIC = 'PUBLIC',
-  PRIVATE = 'PRIVATE',
-}
+
 interface TaskDto {
   id: number
   name: string
@@ -64,7 +54,12 @@ interface SubscriptionPlanDto {
   apiCallsPrice?: number;
 }
 
-// ===== MAIN COMPONENT =====
+/**
+ * ModelDetailPage component displays detailed information about a specific AI model,
+ * including metadata, performance metrics, subscription plans, API endpoints, and user comments.
+ * It allows users to test the model, select subscription plans, and add comments.
+ * @returns {JSX.Element} The rendered ModelDetailPage component.
+ */
 export function ModelDetailPage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
@@ -110,10 +105,13 @@ export function ModelDetailPage() {
 
 
   useEffect(() => {
+
     axios.get(`${import.meta.env.VITE_BACKEND_HOST}/api/v1/models/${id}`)
       .then(res => {
+
         const data = res.data.data
-        console.log(" The Model DATA  ", data)
+
+
         setModel({
           name: data.name,
           description: data.description,
@@ -160,6 +158,19 @@ export function ModelDetailPage() {
         })
       })
   }, [id])
+
+  /**
+   * Handles the action of testing the model by navigating to the test page with the model data.
+   * 
+   */
+  const handleTestModel = () => {
+    console.log('Testing model:', model);
+    navigate(`/models/test/${id}`, {
+      state: { model: model }
+    })
+
+  }
+
 
   const handleSelectPlan = (planId: number) => setSelectedPlan(planId)
 
@@ -216,7 +227,6 @@ export function ModelDetailPage() {
     switch (billing) {
       case BillingPeriod.MONTHLY: return <Calendar className="h-5 w-5 text-blue-500" />
       case BillingPeriod.ANNUAL: return <BarChart className="h-5 w-5 text-blue-500" />
-      case BillingPeriod.WEEKLY: return <Database className="h-5 w-5 text-blue-500" />
       default: return null
     }
   }
@@ -272,9 +282,9 @@ export function ModelDetailPage() {
           </div>
           <div className="flex flex-wrap gap-4">
 
-            <Link to={`/models/test/${id}`} className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 flex items-center">
+            <button onClick={() => { handleTestModel() }} className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 flex items-center">
               <Telescope className="h-5 w-5 mr-2" />Tester le modèle
-            </Link>
+            </button>
           </div>
         </div>
 
